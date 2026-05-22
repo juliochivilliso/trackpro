@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Vehicle {
+  id        Int      @id @default(autoincrement())
+  plate     String   @unique
+  make      String?
+  model     String?
+  year      Int?
+  color     String?
+  vin       String?  @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments Assignment[]
+}
+
+model Driver {
+  id                Int      @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  licenseNumber     String   @unique
+  licenseExpiration DateTime?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments Assignment[]
+}
+
+model Equipment {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique
+  name         String
+  imei         String?  @unique
+  status       String   @default("AVAILABLE") // AVAILABLE, ASSIGNED, MAINTENANCE
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignments Assignment[]
+}
+
+model Assignment {
+  id           Int       @id @default(autoincrement())
+  vehicleId    Int
+  equipmentId  Int
+  driverId     Int?
+  startDate    DateTime  @default(now())
+  endDate      DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+
+  vehicle      Vehicle   @relation(fields: [vehicleId], references: [id])
+  equipment    Equipment @relation(fields: [equipmentId], references: [id])
+  driver       Driver?   @relation(fields: [driverId], references: [id])
+}

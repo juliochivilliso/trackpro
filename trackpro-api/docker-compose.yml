@@ -1,0 +1,33 @@
+services:
+  api:
+    build: .
+    container_name: trackpro-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: file:/data/prod.db
+      PORT: 4000
+    volumes:
+      - db-data:/data
+
+  web:
+    build:
+      context: ../trackpro-web
+      args:
+        NEXT_PUBLIC_API_URL: http://51.161.107.103:4000
+        NEXT_PUBLIC_MAPBOX_TOKEN: ${NEXT_PUBLIC_MAPBOX_TOKEN}
+    container_name: trackpro-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      TRACCAR_URL: ${TRACCAR_URL}
+      TRACCAR_USER: ${TRACCAR_USER}
+      TRACCAR_PASSWORD: ${TRACCAR_PASSWORD}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      - api
+
+volumes:
+  db-data:
