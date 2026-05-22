@@ -1,0 +1,24 @@
+services:
+  trackpro:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_URL: http://2.24.83.115:4000
+        NEXT_PUBLIC_MAPBOX_TOKEN: ${NEXT_PUBLIC_MAPBOX_TOKEN}
+    container_name: trackpro
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "4000:4000"
+    environment:
+      DATABASE_URL: file:/data/prod.db
+      PORT: 4000
+      TRACCAR_URL: ${TRACCAR_URL}
+      TRACCAR_USER: ${TRACCAR_USER}
+      TRACCAR_PASSWORD: ${TRACCAR_PASSWORD}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    volumes:
+      - db-data:/data
+
+volumes:
+  db-data:

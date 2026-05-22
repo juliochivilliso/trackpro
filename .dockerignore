@@ -1,0 +1,8 @@
+**/node_modules
+**/.next
+**/dist
+**/.git
+**/.env*
+gps_smart_flutter/
+*.png
+index.html

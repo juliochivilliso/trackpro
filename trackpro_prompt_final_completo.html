@@ -1,0 +1,705 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.tab-nav{display:flex;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:18px}
+.tab-btn{flex:1;padding:9px 6px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-right:0.5px solid var(--color-border-tertiary);text-align:center}
+.tab-btn:last-child{border-right:none}
+.tab-btn.active{background:var(--color-text-primary);color:var(--color-background-primary)}
+.panel{display:none}.panel.active{display:block}
+
+.p-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.p-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:14px;line-height:1.5}
+
+.copy-btn{width:100%;padding:11px;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;margin-bottom:14px;transition:all .15s}
+.copy-btn:hover{background:var(--color-background-secondary)}
+.copy-btn.copied{background:var(--color-background-success);color:var(--color-text-success);border-color:var(--color-border-success)}
+
+.prompt-block{font-family:var(--font-mono);font-size:12px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;line-height:1.8;color:var(--color-text-primary);white-space:pre-wrap;word-break:break-word;margin-bottom:10px}
+.s{color:var(--color-text-info);font-weight:500}
+.k{color:var(--color-text-success)}
+.c{color:var(--color-text-tertiary)}
+.v{color:var(--color-text-warning)}
+
+.checklist{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)}
+.check-icon{width:18px;height:18px;border-radius:50%;background:var(--color-background-success);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:10px;color:var(--color-text-success)}
+.check-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.check-desc{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+
+.ask-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.ask-btn{padding:7px 14px;font-size:12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.ask-btn:hover{background:var(--color-background-secondary)}
+</style>
+
+<h2 class="sr-only">Prompts técnicos finales y completos para TrackPro GPS Platform</h2>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="show('check')">Qué incluye</button>
+  <button class="tab-btn" onclick="show('react')">Prompt React</button>
+  <button class="tab-btn" onclick="show('flutter')">Prompt Flutter</button>
+  <button class="tab-btn" onclick="show('backend')">Prompt Backend</button>
+</div>
+
+<!-- ══ CHECKLIST ══ -->
+<div id="check" class="panel active">
+  <div class="p-title">Prompts actualizados y completos</div>
+  <div class="p-sub">Todo lo que se añadió vs la versión anterior. Listo para pasar a cualquier IA.</div>
+
+  <div class="checklist">
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">Stack completo React + Next.js 14</div>
+        <div class="check-desc">Mapbox GL, Zustand, TanStack Query, shadcn/ui, Geist font, dark/light mode</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">Stack completo Flutter</div>
+        <div class="check-desc">Riverpod 2, Mapbox SDK, Dio, Socket.io, FCM push, Freezed, go_router</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">Todos los comandos SMS del ST-901L</div>
+        <div class="check-desc">Relay motor (9400000/9410000), geocerca, vibración, velocidad, APN, servidor, sleep, reset</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">Servicio SMS completo en NestJS</div>
+        <div class="check-desc">SmsCommandService con todos los métodos: cutEngine, restoreEngine, setServer, setGeofence, etc.</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">TCP Server con parser del protocolo ST-901L</div>
+        <div class="check-desc">Trama binaria 0x22, extracción de lat/lng/speed/heading/ignition/battery</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">Motor de alertas completo</div>
+        <div class="check-desc">Velocidad, geocerca, vibración/choque, batería baja, desconexión de energía, motor apagado inesperado</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">Multi-tenant desde el día 1</div>
+        <div class="check-desc">tenant_id en todas las tablas, JWT con tenantId, Row Level Security</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">WebSocket en tiempo real</div>
+        <div class="check-desc">Socket.io, Redis pub/sub, events: vehicle:position, alert:new, vehicle:status</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">TimescaleDB para datos GPS</div>
+        <div class="check-desc">Hypertable positions, índice por vehicle_id + timestamp, queries de historial optimizadas</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon">✓</div>
+      <div>
+        <div class="check-name">Zona horaria para RD</div>
+        <div class="check-desc">Comando: 8960000W04 — UTC-4 República Dominicana</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ask-row">
+    <button class="ask-btn" onclick="sendPrompt('Genera el SmsCommandService completo en NestJS con todos los comandos del ST-901L ↗')">Generar SmsCommandService ↗</button>
+    <button class="ask-btn" onclick="sendPrompt('Genera el TCP Server completo con el parser del protocolo ST-901L ↗')">Generar TCP Server ↗</button>
+  </div>
+</div>
+
+<!-- ══ REACT ══ -->
+<div id="react" class="panel">
+  <div class="p-title">Prompt completo — Dashboard React</div>
+  <button class="copy-btn" id="btn-r" onclick="copy('txt-r','btn-r')">Copiar prompt React completo</button>
+  <div class="prompt-block" id="txt-r"><span class="s"># TRACKPRO — Dashboard Web (React / Next.js 14)</span>
+
+<span class="s">## Rol</span>
+Eres un desarrollador senior full-stack. Construye el
+dashboard web de TrackPro, plataforma GPS profesional
+para flotas de vehículos en tiempo real.
+
+<span class="s">## Stack obligatorio</span>
+<span class="k">Framework:</span>     Next.js 14 App Router (TypeScript strict)
+<span class="k">Estilos:</span>       Tailwind CSS + shadcn/ui
+<span class="k">Mapas:</span>         Mapbox GL JS v3
+<span class="k">Estado:</span>        Zustand + TanStack Query v5
+<span class="k">Tiempo real:</span>   Socket.io client
+<span class="k">Formularios:</span>   React Hook Form + Zod
+<span class="k">Gráficas:</span>      Recharts
+<span class="k">Iconos:</span>        Lucide React
+<span class="k">Fuente:</span>        Geist Sans (Vercel)
+<span class="k">Temas:</span>         next-themes (dark/light toggle)
+
+<span class="s">## Diseño — estilo Vercel/Linear</span>
+- Minimalista, limpio, datos primero
+- Dark: bg #0A0A0A · surface #111111 · border #222
+- Light: bg #FFFFFF · surface #F5F5F5 · border #E5E5E5
+- Acento único: azul #3B82F6
+- Estados: verde #22C55E · rojo #EF4444 · ámbar #F59E0B
+- Bordes 0.5px · animaciones 150ms ease
+- Fuente Geist Sans, pesos 400 y 500 únicamente
+
+<span class="s">## Pantallas MVP</span>
+
+<span class="k">1. /dashboard — Mapa principal</span>
+- Mapbox GL fullscreen
+- Sidebar izquierda colapsable 280px:
+  · Logo TrackPro + toggle dark/light
+  · Buscador de vehículos
+  · Lista VehicleCard con estado online/offline
+  · Badge de alertas no leídas
+- Marcadores en mapa:
+  · Flecha de dirección (heading)
+  · Verde=movimiento · Gris=detenido · Rojo=alerta
+  · Pulso suave al recibir nueva posición via WS
+- Popup al click: nombre, placa, velocidad,
+  estado motor, tiempo último reporte, btn "Detalle"
+- Header: logo, badge LIVE pulsante, notificaciones
+
+<span class="k">2. /vehicles/[id] — Detalle vehículo</span>
+- Mini mapa con posición actual
+- 4 StatCards: velocidad, km hoy, motor, batería
+- Acciones:
+  · Botón "Cortar motor" (rojo) → modal 2 pasos
+    Paso 1: "¿Confirmar corte de motor?"
+    Paso 2: "Esta acción detiene el vehículo. ¿Seguro?"
+    → POST /vehicles/:id/relay { action: "cut" }
+  · Botón "Restaurar motor" (verde)
+    → POST /vehicles/:id/relay { action: "restore" }
+  · Ver historial, Configurar alertas
+- Últimas 5 alertas del vehículo
+
+<span class="k">3. /history/[id] — Historial y playback</span>
+- DateRangePicker
+- Ruta en mapa con color por velocidad
+  (verde=lento, amarillo=moderado, rojo=rápido)
+- PlaybackControls: play/pause, 1x/5x/10x/30x,
+  timeline scrubable, timestamp en tiempo real
+- Lista de paradas con duración
+
+<span class="k">4. /alerts — Centro de alertas</span>
+- Feed tiempo real via WebSocket
+- Tipos con iconos: speed/geofence/shock/
+  battery/disconnect/ignition
+- Filtros por tipo, vehículo, fecha
+- Marcar leída/no leída
+
+<span class="k">5. /geofences — Geocercas</span>
+- Mapbox Draw para polígonos
+- Lista con estado activa/inactiva
+- Configurar vehículos asignados y tipo de alerta
+
+<span class="s">## API y WebSocket</span>
+<span class="k">Base URL:</span>      http://localhost:3000/api/v1
+<span class="k">WebSocket:</span>     ws://localhost:3000
+<span class="k">Auth:</span>          JWT Bearer token
+
+<span class="c">Endpoints:</span>
+GET  /vehicles                     lista de vehículos
+GET  /vehicles/:id                 detalle
+GET  /vehicles/:id/positions       historial GPS
+     ?from=ISO&to=ISO
+POST /vehicles/:id/relay           cortar/restaurar motor
+     body: { action: "cut"|"restore" }
+GET  /alerts                       lista paginada
+PATCH /alerts/:id/read             marcar leída
+GET  /geofences                    lista
+POST /geofences                    crear
+
+<span class="c">WebSocket events:</span>
+vehicle:position → { vehicleId, lat, lng, speed,
+                     heading, ignition, battery, timestamp }
+alert:new        → { id, type, vehicleId, value, timestamp }
+vehicle:status   → { vehicleId, online, lastSeen }
+
+<span class="s">## Tipos TypeScript</span>
+interface Vehicle {
+  id: string; name: string; plate: string
+  tenantId: string; deviceId: string
+  status: 'online' | 'offline'
+  lastPosition: Position | null
+  lastSeen: Date
+}
+interface Position {
+  vehicleId: string; lat: number; lng: number
+  speed: number; heading: number
+  ignition: boolean; battery: number
+  timestamp: Date
+}
+interface Alert {
+  id: string; vehicleId: string
+  type: 'speed'|'geofence'|'shock'|'battery'
+       |'disconnect'|'ignition'
+  value: number | string
+  read: boolean; timestamp: Date
+}
+
+<span class="s">## Estructura de carpetas</span>
+trackpro-web/
+├── app/
+│   ├── (auth)/login/page.tsx
+│   ├── dashboard/page.tsx
+│   ├── vehicles/[id]/page.tsx
+│   ├── history/[id]/page.tsx
+│   ├── alerts/page.tsx
+│   └── geofences/page.tsx
+├── components/
+│   ├── map/VehicleMarker.tsx
+│   ├── map/VehiclePopup.tsx
+│   ├── map/RouteLayer.tsx
+│   ├── map/GeofenceLayer.tsx
+│   ├── vehicles/VehicleCard.tsx
+│   ├── vehicles/EngineKillButton.tsx
+│   ├── alerts/AlertItem.tsx
+│   ├── layout/Sidebar.tsx
+│   ├── layout/Header.tsx
+│   └── layout/LiveBadge.tsx
+├── hooks/
+│   ├── useVehicles.ts
+│   ├── useRealtime.ts
+│   └── useMapbox.ts
+├── stores/
+│   ├── vehicleStore.ts
+│   └── alertStore.ts
+└── lib/
+    ├── api.ts
+    └── socket.ts
+
+<span class="s">## Variables de entorno</span>
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.ey...
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_WS_URL=ws://localhost:3000</div>
+</div>
+
+<!-- ══ FLUTTER ══ -->
+<div id="flutter" class="panel">
+  <div class="p-title">Prompt completo — App Flutter</div>
+  <button class="copy-btn" id="btn-f" onclick="copy('txt-f','btn-f')">Copiar prompt Flutter completo</button>
+  <div class="prompt-block" id="txt-f"><span class="s"># TRACKPRO — App Móvil Flutter</span>
+
+<span class="s">## Rol</span>
+Desarrollador senior Flutter. Construye la app móvil
+iOS + Android de TrackPro, plataforma GPS de flotas.
+
+<span class="s">## Stack obligatorio</span>
+<span class="k">Framework:</span>       Flutter 3.x (Dart)
+<span class="k">Estado:</span>          Riverpod 2.x
+<span class="k">Mapas:</span>           flutter_mapbox_gl
+<span class="k">HTTP:</span>            Dio + Retrofit
+<span class="k">WebSocket:</span>       socket_io_client
+<span class="k">Push:</span>            firebase_messaging (FCM + APNs)
+<span class="k">Storage:</span>         flutter_secure_storage
+<span class="k">Navegación:</span>      go_router
+<span class="k">Modelos:</span>         freezed + json_serializable
+<span class="k">Tema:</span>            flex_color_scheme (Material 3)
+
+<span class="s">## pubspec.yaml</span>
+dependencies:
+  flutter_riverpod: ^2.5.0
+  flutter_mapbox_gl: ^0.17.0
+  dio: ^5.4.0
+  retrofit: ^4.1.0
+  socket_io_client: ^2.0.3
+  firebase_messaging: ^14.7.0
+  firebase_core: ^2.24.0
+  flutter_local_notifications: ^16.0.0
+  flutter_secure_storage: ^9.0.0
+  go_router: ^13.0.0
+  freezed: ^2.4.0
+  json_serializable: ^6.7.0
+  flex_color_scheme: ^7.3.0
+  intl: ^0.19.0
+
+<span class="s">## Diseño</span>
+- Material 3 minimalista
+- Dark: #0A0A0A · Light: #FFFFFF
+- Acento: #3B82F6
+- Sin gradientes decorativos
+- Bottom Navigation de 4 tabs
+
+<span class="s">## Pantallas</span>
+
+<span class="k">Tab 1: MapScreen (home)</span>
+- Mapbox GL fullscreen
+- Bottom sheet con lista vehículos
+  (drag: 20% → 50% → 90%)
+- CustomMarker con heading, colores estado
+- Tap marcador → bottom modal con:
+  velocidad, motor, última actualización
+  botones "Ver detalle" y "Ver historial"
+- FAB centrar en mi ubicación
+
+<span class="k">Tab 2: AlertsScreen</span>
+- ListView alertas por timestamp
+- AlertTile: icono tipo, vehículo,
+  descripción, timestamp relativo
+- Swipe to dismiss
+- Filter chips: Todas/Velocidad/Geocerca/etc
+- Badge con contador no leídas
+
+<span class="k">Tab 3: FleetScreen</span>
+- SearchBar + ListView VehicleCard
+- Estado online/offline, velocidad, placa
+- Tap → VehicleDetailScreen
+
+<span class="k">Tab 4: ProfileScreen</span>
+- Info cuenta, theme toggle, notificaciones
+- Logout con confirmación
+
+<span class="k">VehicleDetailScreen (stack desde Fleet/Map)</span>
+- Mini mapa 200px
+- Grid 4 StatCards: velocidad, km, motor, batería
+- EngineKillButton rojo con ConfirmDialog 2 pasos:
+  Paso 1: "¿Cortar motor de [nombre vehículo]?"
+  Paso 2: "El vehículo se detendrá en 10-20 seg"
+  → POST /vehicles/:id/relay { action: "cut" }
+- Botón "Restaurar motor" → { action: "restore" }
+
+<span class="k">HistoryScreen (stack desde Detail)</span>
+- DateRangePicker
+- Mapa con polyline coloreada por velocidad
+- Resumen: km, tiempo movimiento, paradas
+
+<span class="s">## Modelos Freezed</span>
+@freezed
+class Vehicle with _$Vehicle {
+  const factory Vehicle({
+    required String id, required String name,
+    required String plate,
+    required VehicleStatus status,
+    Position? lastPosition,
+    required DateTime lastSeen,
+  }) = _Vehicle;
+  factory Vehicle.fromJson(Map<String,dynamic> j)
+    => _$VehicleFromJson(j);
+}
+
+@freezed
+class Position with _$Position {
+  const factory Position({
+    required String vehicleId,
+    required double lat, required double lng,
+    required double speed, required double heading,
+    required bool ignition, required double battery,
+    required DateTime timestamp,
+  }) = _Position;
+}
+
+@freezed
+class Alert with _$Alert {
+  const factory Alert({
+    required String id, required String vehicleId,
+    required AlertType type,
+    required dynamic value,
+    required bool read,
+    required DateTime timestamp,
+  }) = _Alert;
+}
+
+enum VehicleStatus { online, offline }
+enum AlertType { speed, geofence, shock,
+                 battery, disconnect, ignition }
+
+<span class="s">## Providers Riverpod</span>
+final vehiclesProvider = StateNotifierProvider<
+  VehiclesNotifier, List<Vehicle>>(
+    (ref) => VehiclesNotifier(ref));
+
+final alertsProvider = StateNotifierProvider<
+  AlertsNotifier, List<Alert>>(
+    (ref) => AlertsNotifier(ref));
+
+final unreadCountProvider = Provider<int>((ref) =>
+  ref.watch(alertsProvider).where((a)=>!a.read).length);
+
+final realtimeProvider = Provider<RealtimeService>(
+  (ref) => RealtimeService(ref));
+
+<span class="s">## Push Notifications</span>
+- FCM para Android, APNs para iOS
+- Al recibir alerta → notificación local si app abierta
+- Tap en notificación → abrir VehicleDetailScreen
+- Payload: { vehicleId, alertType, value }
+
+<span class="s">## Variables de entorno</span>
+API_URL=http://192.168.1.XX:3000
+WS_URL=ws://192.168.1.XX:3000
+MAPBOX_TOKEN=pk.ey...</div>
+</div>
+
+<!-- ══ BACKEND ══ -->
+<div id="backend" class="panel">
+  <div class="p-title">Prompt completo — Backend NestJS</div>
+  <button class="copy-btn" id="btn-b" onclick="copy('txt-b','btn-b')">Copiar prompt Backend completo</button>
+  <div class="prompt-block" id="txt-b"><span class="s"># TRACKPRO — Backend NestJS + TCP Server</span>
+
+<span class="s">## Rol</span>
+Desarrollador senior backend. Construye la API y el
+servidor TCP de TrackPro, plataforma GPS de flotas.
+El dispositivo GPS es un ST-901L (4 pines) de SinoTrack.
+
+<span class="s">## Stack</span>
+<span class="k">API:</span>           NestJS 10 (TypeScript strict)
+<span class="k">DB GPS:</span>        TimescaleDB (PostgreSQL + extensión)
+<span class="k">ORM:</span>           TypeORM
+<span class="k">Cache/PubSub:</span>  Redis (ioredis)
+<span class="k">WebSocket:</span>     Socket.io Gateway en NestJS
+<span class="k">Auth:</span>          JWT (access 15min + refresh 30 días)
+<span class="k">SMS:</span>           Twilio (para enviar comandos al GPS)
+<span class="k">Validación:</span>    class-validator + class-transformer
+<span class="k">Docs:</span>          Swagger/OpenAPI automático
+
+<span class="s">## COMANDOS SMS COMPLETOS DEL ST-901L</span>
+<span class="c">Contraseña default: 0000</span>
+<span class="c">Formato: COMANDO+PASSWORD o COMANDO+PASSWORD+PARAMS</span>
+
+<span class="v">── RELAY / MOTOR (cable amarillo) ──</span>
+9400000          Cortar motor (vehículo para en 10-20s)
+9410000          Restaurar motor
+
+<span class="v">── SERVIDOR Y RED ──</span>
+804+PWD IP PORT  Cambiar servidor: "8040000 IP 5023"
+803+PWD APN      Configurar APN: "8030000 internet"
+710+PWD          Activar modo GPRS (tiempo real)
+700+PWD          Activar modo SMS (sin internet)
+RCONF            Ver configuración actual del dispositivo
+
+<span class="v">── INTERVALOS DE REPORTE ──</span>
+805+PWD T        Intervalo motor ON (seg, default 20)
+809+PWD T        Intervalo motor OFF (seg, default 180)
+
+<span class="v">── ALARMAS ──</span>
+211+PWD          Activar geocerca circular
+210+PWD          Desactivar geocerca
+005+PWD METROS   Configurar radio geocerca (mín 1000m)
+181+PWD+T+SEG    Activar alarma vibración/choque (0-120s)
+180+PWD          Desactivar alarma vibración
+SPEED+PWD KMH    Configurar límite de velocidad
+003+PWD          Activar alarma de movimiento (anti-robo)
+004+PWD          Desactivar alarma de movimiento
+
+<span class="v">── AHORRO DE ENERGÍA ──</span>
+SLEEP+PWD MIN    Activar sleep (min después de motor OFF)
+SLEEP+PWD 0      Desactivar sleep
+
+<span class="v">── UBICACIÓN ──</span>
+669+PWD          Pedir ubicación → responde Google Maps link
+665+PWD HHMM     Enviar ubicación diaria a hora fija
+6650000OFF       Desactivar ubicación programada
+
+<span class="v">── CONFIGURACIÓN ──</span>
+1+N+PWD NUMERO   Agregar número de control (N=1,2,3)
+1+N+PWD DELETE   Eliminar número de control
+777+NUEVA+ACTUAL Cambiar contraseña
+896+PWD+E/W+HH   Zona horaria (RD = 8960000W04)
+150+PWD          Alertas por llamada + SMS
+151+PWD          Solo SMS en alertas
+RESTART          Reiniciar dispositivo
+FACTORY+PWD      Reset de fábrica
+VERNO            Ver versión de firmware
+
+<span class="s">## MÓDULO: SmsCommandService</span>
+<span class="c">// Construir este servicio completo en NestJS</span>
+@Injectable()
+export class SmsCommandService {
+  constructor(private twilio: TwilioService) {}
+
+  <span class="c">// Cada método envía el SMS correspondiente</span>
+  cutEngine(simNumber: string, pwd = '0000')
+    → envía '9400' + pwd
+  restoreEngine(simNumber: string, pwd = '0000')
+    → envía '9410' + pwd
+  setServer(sim, ip, port, pwd = '0000')
+    → envía '804' + pwd + ' ' + ip + ' ' + port
+  setAPN(sim, apn, pwd = '0000')
+    → envía '803' + pwd + ' ' + apn
+  setGPRSMode(sim, pwd = '0000')
+    → envía '710' + pwd
+  setGeofence(sim, enable, pwd = '0000')
+    → envía (enable ? '211' : '210') + pwd
+  setGeofenceRadius(sim, meters, pwd = '0000')
+    → envía '005' + pwd + ' ' + meters
+  setShockAlarm(sim, enable, seconds, pwd = '0000')
+    → envía (enable ? '181' + pwd + 'T' + seconds
+             : '180' + pwd)
+  setSpeedAlarm(sim, kmh, pwd = '0000')
+    → envía 'SPEED' + pwd + ' ' + kmh
+  setMovementAlarm(sim, enable, pwd = '0000')
+    → envía (enable ? '003' : '004') + pwd
+  setSleepMode(sim, minutes, pwd = '0000')
+    → envía 'SLEEP' + pwd + ' ' + minutes
+  getLocation(sim, pwd = '0000')
+    → envía '669' + pwd
+  changePassword(sim, newPwd, oldPwd)
+    → envía '777' + newPwd + oldPwd
+  setTimezone(sim, offset, pwd = '0000')
+    → envía '896' + pwd + 'W' + Math.abs(offset)
+  setReportInterval(sim, onSec, offSec, pwd='0000')
+    → envía '805' + pwd + ' ' + onSec
+    → envía '809' + pwd + ' ' + offSec
+  restartDevice(sim) → envía 'RESTART'
+  getConfig(sim) → envía 'RCONF'
+}
+
+<span class="s">## TCP SERVER — parser protocolo ST-901L</span>
+<span class="c">// Crear en src/tcp-server/index.ts</span>
+<span class="c">// Puerto: 5023</span>
+
+<span class="c">// Trama binaria del ST-901L tipo 0x22:</span>
+<span class="c">// [78 78] [len] [0x22] [DeviceID 8B] [Date 6B]</span>
+<span class="c">// [Lat 4B] [Lng 4B] [Speed 1B] [Heading 2B]</span>
+<span class="c">// [Flags 1B] [Serial 2B] [CRC 2B] [0D 0A]</span>
+
+Campos a extraer:
+- deviceId: bytes 4-11 (IMEI en BCD)
+- datetime: 6 bytes BCD → UTC timestamp
+- lat: 4 bytes big-endian / 1,800,000 → grados
+- lng: 4 bytes big-endian / 1,800,000 → grados
+- speed: 1 byte → km/h
+- heading: 2 bytes big-endian → grados (0-360)
+- flags byte: bit0=ignición, bit1=movimiento,
+              bit2=ACC, bit3=GPS válido
+
+Al recibir paquete válido:
+1. Guardar en TimescaleDB (tabla positions)
+2. Redis PUBLISH 'gps:position' JSON del paquete
+3. Redis PUBLISH 'gps:raw' para motor de alertas
+4. Actualizar último estado en Redis: SET vehicle:{id}
+
+<span class="s">## BASE DE DATOS</span>
+<span class="c">-- TimescaleDB hypertable para posiciones GPS</span>
+CREATE TABLE positions (
+  id          BIGSERIAL,
+  tenant_id   UUID NOT NULL,
+  vehicle_id  UUID NOT NULL,
+  lat         DOUBLE PRECISION NOT NULL,
+  lng         DOUBLE PRECISION NOT NULL,
+  speed       REAL,
+  heading     REAL,
+  ignition    BOOLEAN,
+  battery     REAL,
+  timestamp   TIMESTAMPTZ NOT NULL
+);
+SELECT create_hypertable('positions','timestamp');
+CREATE INDEX ON positions (vehicle_id, timestamp DESC);
+CREATE INDEX ON positions (tenant_id, timestamp DESC);
+
+<span class="s">## MÓDULOS NESTJS</span>
+
+<span class="k">AuthModule</span>
+POST /auth/login    JWT access + refresh cookie
+POST /auth/refresh  nuevo access con cookie
+POST /auth/logout   invalida refresh token
+JWT incluye: { userId, tenantId, role }
+
+<span class="k">VehiclesModule</span>
+GET    /vehicles                lista del tenant
+GET    /vehicles/:id            detalle + última pos
+GET    /vehicles/:id/positions  historial TimescaleDB
+       ?from=ISO&to=ISO
+POST   /vehicles                crear vehículo
+PATCH  /vehicles/:id            actualizar
+POST   /vehicles/:id/relay      enviar comando SMS
+       body: { action: 'cut'|'restore'|'config',
+               params?: object }
+POST   /vehicles/:id/command    cualquier comando SMS
+       body: { command: string }
+
+<span class="k">AlertsModule</span>
+GET    /alerts          lista paginada con filtros
+PATCH  /alerts/:id/read marcar leída
+POST   /alerts/settings configurar umbrales por vehículo
+
+Motor de alertas (Kafka consumer):
+- Evalúa cada posición recibida
+- Velocidad > límite configurado → alerta speed
+- Fuera de geocerca → alerta geofence
+- Batería ≤ 20% → alerta battery
+- ACC OFF inesperado → alerta ignition
+- Sin reporte > 5min → alerta disconnect
+
+<span class="k">GeofencesModule</span>
+GET    /geofences       lista con PostGIS GeoJSON
+POST   /geofences       crear polígono
+PATCH  /geofences/:id   actualizar
+DELETE /geofences/:id   eliminar
+Evalúa: ST_Contains(geofence.area, point)
+
+<span class="k">RealtimeGateway (WebSocket)</span>
+Rooms: tenant:{tenantId}
+Suscribe a Redis: gps:position → emite vehicle:position
+Suscribe a Redis: gps:alerts → emite alert:new
+Emite: vehicle:status cuando cambia online/offline
+
+<span class="s">## ENTIDADES TypeORM base</span>
+@Entity()
+export class Vehicle {
+  @PrimaryGeneratedColumn('uuid') id: string
+  @Column() tenantId: string   <span class="c">// SIEMPRE presente</span>
+  @Column() name: string
+  @Column() plate: string
+  @Column() deviceId: string   <span class="c">// IMEI del ST-901L</span>
+  @Column() simNumber: string  <span class="c">// para SMS commands</span>
+  @Column() smsPassword: string <span class="c">// default '0000'</span>
+  @Column({ default: false }) online: boolean
+  @Column({ type: 'float', nullable: true }) lastLat: number
+  @Column({ type: 'float', nullable: true }) lastLng: number
+  @Column({ type: 'float', nullable: true }) lastSpeed: number
+  @Column({ default: false }) ignition: boolean
+  @UpdateDateColumn() lastSeen: Date
+}
+
+<span class="s">## VARIABLES DE ENTORNO</span>
+DATABASE_URL=postgresql://trackpro:pass@localhost/trackpro
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=min_512_bits_aqui
+JWT_REFRESH_SECRET=otro_secret_512_bits
+TCP_PORT=5023
+PORT=3000
+TWILIO_ACCOUNT_SID=ACxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxx
+TWILIO_FROM_NUMBER=+1xxxxxxxxxx</div>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+function copy(id,btnId){
+  navigator.clipboard.writeText(
+    document.getElementById(id).innerText
+  ).then(()=>{
+    const b=document.getElementById(btnId);
+    b.textContent='Copiado!';
+    b.classList.add('copied');
+    setTimeout(()=>{
+      b.textContent=b.textContent.includes('React')
+        ?'Copiar prompt React completo'
+        :b.textContent.includes('Flutter')
+        ?'Copiar prompt Flutter completo'
+        :'Copiar prompt Backend completo';
+      b.classList.remove('copied');
+    },2000);
+  });
+}
+</script>

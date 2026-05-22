@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRAIN GPS — Smart Vehicle Command Center</title>
+<meta name="description" content="GPS SMART Dashboard for SinoTrack ST-901L 4G Tracker">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ============================================
+   GPS SMART — Design System
+   Aesthetic: Clean High-Tech / SpaceX-inspired
+   ============================================ */
+:root {
+  --bg-deep: #080c10;
+  --bg-panel: rgba(12, 18, 28, 0.85);
+  --bg-card: rgba(16, 24, 38, 0.7);
+  --bg-hover: rgba(0, 229, 255, 0.08);
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0, 229, 255, 0.3);
+  --green: #00ff88;
+  --green-dim: rgba(0, 255, 136, 0.3);
+  --amber: #ffaa00;
+  --amber-dim: rgba(255, 170, 0, 0.3);
+  --red: #ff3355;
+  --red-dim: rgba(255, 51, 85, 0.3);
+  --text-primary: #e8edf3;
+  --text-secondary: #7a8ba5;
+  --text-dim: #3d4f66;
+  --border: rgba(0, 229, 255, 0.12);
+  --glass-blur: 16px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --sidebar-w: 64px;
+  --topbar-h: 56px;
+  --right-panel-w: 280px;
+  --bottom-h: 200px;
+  --footer-h: 36px;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  position: relative;
+}
+/* Grid background */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+/* Scanline overlay */
+body::after {
+  content:''; position:fixed; inset:0; z-index:9999; pointer-events:none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  animation: scanPulse 4s ease-in-out infinite;
+}
+@keyframes scanPulse { 0%,100%{opacity:.3} 50%{opacity:.6} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+@keyframes glow { 0%,100%{box-shadow:0 0 8px var(--cyan-dim)} 50%{box-shadow:0 0 20px var(--cyan-dim)} }
+@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes geofencePulse { 0%{r:80;opacity:.5} 100%{r:100;opacity:0} }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes healthPulse { 0%,100%{border-color:var(--cyan-dim)} 50%{border-color:var(--cyan)} }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+.text-cyan { color: var(--cyan); }
+.text-green { color: var(--green); }
+.text-amber { color: var(--amber); }
+.text-red { color: var(--red); }
+.text-dim { color: var(--text-secondary); }
+
+/* Glass card */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.glass:hover { border-color: var(--cyan-dim); }
+
+/* ---- LAYOUT ---- */
+#app {
+  display:grid; height:100vh; position:relative; z-index:1;
+  grid-template-columns: var(--sidebar-w) 1fr var(--right-panel-w);
+  grid-template-rows: var(--topbar-h) 1fr var(--bottom-h) var(--footer-h);
+  grid-template-areas:
+    "sidebar topbar topbar"
+    "sidebar map rightpanel"
+    "sidebar bottom rightpanel"
+    "sidebar footer footer";
+  gap: 4px;
+  padding: 4px;
+}
+
+/* SIDEBAR */
+#sidebar {
+  grid-area: sidebar;
+  display:flex; flex-direction:column; align-items:center;
+  padding: 12px 0; gap: 4px;
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+#sidebar .logo { width:36px; height:36px; margin-bottom:12px; cursor:pointer; }
+#sidebar .logo svg { width:100%; height:100%; }
+.nav-btn {
+  width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+  border:none; background:transparent; color:var(--text-secondary);
+  border-radius: var(--radius-sm); cursor:pointer; transition:all .2s;
+  position:relative;
+}
+.nav-btn:hover { background:var(--bg-hover); color:var(--cyan); }
+.nav-btn.active { color:var(--cyan); background:rgba(0,229,255,0.1); }
+.nav-btn.active::before {
+  content:''; position:absolute; left:0; top:25%; bottom:25%;
+  width:3px; background:var(--cyan); border-radius:0 3px 3px 0;
+}
+.nav-btn svg { width:20px; height:20px; }
+.sidebar-spacer { flex:1; }
+
+/* TOPBAR */
+#topbar {
+  grid-area: topbar;
+  display:flex; align-items:center; gap:16px;
+  padding: 0 16px;
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.topbar-brand { font-weight:700; font-size:15px; letter-spacing:1px; }
+.topbar-brand span { color:var(--cyan); }
+.topbar-status {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; color:var(--green);
+}
+.status-dot {
+  width:8px; height:8px; border-radius:50%;
+  background:var(--green); animation:pulse 2s infinite;
+}
+.topbar-spacer { flex:1; }
+.topbar-stat {
+  display:flex; flex-direction:column; align-items:center;
+  padding:0 12px; border-left:1px solid var(--border);
+}
+.topbar-stat-val { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+.topbar-stat-label { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; }
+#clock { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--cyan); padding-left:12px; border-left:1px solid var(--border); }
+
+/* MAP AREA */
+#map-area {
+  grid-area: map;
+  position:relative; overflow:hidden;
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+#leafletMap { width:100%; height:100%; border-radius:var(--radius); }
+/* Dark filter over Leaflet tiles */
+#map-area .leaflet-tile-pane { filter: brightness(0.7) contrast(1.2) saturate(0.6); }
+#map-area .leaflet-control-zoom { display:none; }
+#map-area .leaflet-control-attribution { display:none; }
+.map-overlay {
+  position:absolute; top:12px; left:12px;
+  display:flex; flex-direction:column; gap:8px; z-index:5;
+}
+.map-overlay .glass { padding:8px 12px; font-size:11px; }
+.map-coords { font-family:'JetBrains Mono',monospace; font-size:11px; }
+.map-zoom-controls {
+  position:absolute; bottom:12px; right:12px; z-index:5;
+  display:flex; flex-direction:column; gap:4px;
+}
+.zoom-btn {
+  width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm);
+  color:var(--text-primary); font-size:18px; cursor:pointer; transition:all .2s;
+  backdrop-filter:blur(8px);
+}
+.zoom-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+.map-follow-btn {
+  position:absolute; bottom:12px; left:12px; z-index:5;
+  padding:6px 14px; font-size:11px; font-family:'Outfit',sans-serif;
+  background:rgba(0,229,255,0.1); border:1px solid var(--cyan-dim);
+  color:var(--cyan); border-radius:20px; cursor:pointer; transition:all .2s;
+}
+.map-follow-btn:hover { background:rgba(0,229,255,0.2); }
+.map-follow-btn.active { background:var(--cyan); color:var(--bg-deep); }
+
+/* RIGHT PANEL */
+#right-panel {
+  grid-area: rightpanel;
+  display:flex; flex-direction:column; gap:4px;
+  overflow-y:auto;
+}
+#right-panel::-webkit-scrollbar { width:4px; }
+#right-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+.panel-section {
+  background: var(--bg-panel);
+  border:1px solid var(--border); border-radius:var(--radius);
+  padding:12px; animation: fadeIn .4s ease;
+}
+.panel-title {
+  font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--text-secondary); margin-bottom:10px;
+  display:flex; align-items:center; gap:6px;
+}
+.panel-title svg { width:14px; height:14px; color:var(--cyan); }
+
+/* Vehicle cards */
+.vehicle-card {
+  padding:10px; border-radius:var(--radius-sm);
+  border:1px solid transparent; cursor:pointer;
+  transition:all .2s; margin-bottom:6px;
+  display:flex; align-items:center; gap:10px;
+}
+.vehicle-card:hover { background:var(--bg-hover); border-color:var(--border); }
+.vehicle-card.selected { border-color:var(--cyan); background:rgba(0,229,255,0.06); }
+.vehicle-icon {
+  width:36px; height:36px; border-radius:var(--radius-sm);
+  background:var(--bg-card); display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border);
+}
+.vehicle-icon svg { width:18px; height:18px; }
+.vehicle-info { flex:1; }
+.vehicle-name { font-size:13px; font-weight:600; }
+.vehicle-plate { font-size:11px; color:var(--text-secondary); font-family:'JetBrains Mono',monospace; }
+.vehicle-status {
+  font-size:10px; padding:2px 8px; border-radius:10px; font-weight:500;
+}
+.vehicle-status.online { background:var(--green-dim); color:var(--green); }
+.vehicle-status.offline { background:var(--red-dim); color:var(--red); }
+
+/* AI Panel */
+.ai-card {
+  padding:10px; border-radius:var(--radius-sm);
+  border-left:3px solid var(--cyan);
+  background:rgba(0,229,255,0.04);
+  margin-bottom:8px; font-size:12px; line-height:1.5;
+}
+.ai-card.warning { border-left-color:var(--amber); background:rgba(255,170,0,0.04); }
+.ai-card.critical { border-left-color:var(--red); background:rgba(255,51,85,0.04); }
+.ai-card-header { display:flex; align-items:center; gap:6px; margin-bottom:4px; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+.ai-card-header svg { width:14px; height:14px; }
+.ai-card p { color:var(--text-secondary); }
+
+/* BOTTOM METRICS */
+#bottom-metrics {
+  grid-area: bottom;
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.metric-card {
+  background: var(--bg-panel);
+  border:1px solid var(--border); border-radius:var(--radius);
+  padding:14px; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center;
+  transition: border-color .3s;
+}
+.metric-card:hover { border-color:var(--cyan-dim); }
+.metric-label {
+  font-size:10px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--text-secondary); margin-bottom:6px;
+}
+.metric-value {
+  font-family:'JetBrains Mono',monospace;
+  font-size:28px; font-weight:700; line-height:1;
+}
+.metric-unit { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+.metric-bar {
+  width:100%; height:4px; background:var(--bg-card);
+  border-radius:2px; margin-top:8px; overflow:hidden;
+}
+.metric-bar-fill {
+  height:100%; border-radius:2px;
+  transition: width .8s ease;
+}
+
+/* Speed gauge SVG */
+.gauge-wrap { width:120px; height:80px; position:relative; }
+.gauge-wrap svg { width:100%; height:100%; }
+
+/* FOOTER */
+#footer {
+  grid-area: footer;
+  display:flex; align-items:center; gap:16px;
+  padding: 0 12px; font-size:11px;
+  color:var(--text-secondary);
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.footer-item { display:flex; align-items:center; gap:4px; }
+.footer-item .mono { color:var(--text-dim); }
+
+/* MODALS */
+.modal-overlay {
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+  display:none; align-items:center; justify-content:center;
+}
+.modal-overlay.show { display:flex; }
+.modal-box {
+  width:400px; max-width:90vw;
+  background:var(--bg-panel); border:1px solid var(--border);
+  border-radius:var(--radius); padding:28px;
+  animation: fadeIn .3s ease;
+}
+.modal-title { font-size:18px; font-weight:700; margin-bottom:8px; }
+.modal-text { font-size:13px; color:var(--text-secondary); margin-bottom:20px; line-height:1.6; }
+.btn {
+  padding:10px 20px; border:none; border-radius:var(--radius-sm);
+  font-family:'Outfit',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all .2s;
+}
+.btn-danger { background:var(--red); color:#fff; }
+.btn-danger:hover { box-shadow:0 0 20px var(--red-dim); }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text-primary); }
+.btn-ghost:hover { border-color:var(--cyan); }
+.btn-cyan { background:var(--cyan); color:var(--bg-deep); }
+.btn-cyan:hover { box-shadow:0 0 20px var(--cyan-dim); }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+/* Hold-to-confirm button */
+.hold-btn {
+  position:relative; overflow:hidden;
+  padding:12px 24px; border:2px solid var(--red);
+  background:transparent; color:var(--red);
+  border-radius:var(--radius-sm); cursor:pointer;
+  font-family:'Outfit',sans-serif; font-size:13px; font-weight:700;
+  text-transform:uppercase; letter-spacing:1px;
+  user-select:none; transition:all .2s;
+}
+.hold-btn .hold-fill {
+  position:absolute; left:0; top:0; bottom:0;
+  width:0; background:var(--red-dim);
+  transition: width .05s linear;
+}
+.hold-btn span { position:relative; z-index:1; }
+
+/* ALERTS PANEL */
+#alerts-container {
+  position:fixed; top:70px; right:16px; z-index:500;
+  display:flex; flex-direction:column; gap:6px;
+  width:320px;
+}
+.alert-toast {
+  padding:12px 16px; border-radius:var(--radius-sm);
+  background:var(--bg-panel); border:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  animation: slideIn .4s ease;
+  display:flex; align-items:flex-start; gap:10px;
+  font-size:12px;
+}
+.alert-toast.alert-warn { border-left:3px solid var(--amber); }
+.alert-toast.alert-danger { border-left:3px solid var(--red); }
+.alert-toast.alert-info { border-left:3px solid var(--cyan); }
+.alert-icon { width:18px; height:18px; flex-shrink:0; margin-top:1px; }
+.alert-body { flex:1; }
+.alert-title { font-weight:600; margin-bottom:2px; }
+.alert-time { font-size:10px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; }
+.alert-close { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:16px; }
+
+/* History Calendar */
+.calendar-grid {
+  display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+}
+.cal-day {
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-family:'JetBrains Mono',monospace;
+  border-radius:var(--radius-sm); cursor:pointer; transition:all .2s;
+  border:1px solid transparent;
+}
+.cal-day:hover { border-color:var(--cyan-dim); background:var(--bg-hover); }
+.cal-day.has-data { color:var(--cyan); }
+.cal-day.has-data::after {
+  content:''; position:absolute; bottom:3px;
+  width:4px; height:4px; border-radius:50%; background:var(--cyan);
+}
+.cal-day.selected { background:var(--cyan); color:var(--bg-deep); }
+.cal-header { font-size:10px; color:var(--text-dim); text-transform:uppercase; }
+
+/* Report Table */
+.report-table { width:100%; border-collapse:collapse; font-size:11px; }
+.report-table th {
+  text-align:left; padding:6px 8px; font-size:10px;
+  text-transform:uppercase; letter-spacing:.5px;
+  color:var(--text-secondary); border-bottom:1px solid var(--border);
+}
+.report-table td {
+  padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.03);
+  font-family:'JetBrains Mono',monospace;
+}
+.report-table tr:hover td { background:var(--bg-hover); }
+
+/* Signal bars */
+.signal-bars { display:flex; align-items:flex-end; gap:2px; height:20px; }
+.signal-bar {
+  width:4px; border-radius:1px; background:var(--text-dim);
+  transition:background .3s, height .3s;
+}
+.signal-bar.active { background:var(--cyan); }
+
+/* Leaflet HUD Tooltips */
+.hud-tooltip {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--cyan) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  box-shadow: 0 0 12px rgba(0,229,255,0.15) !important;
+}
+.hud-tooltip::before { border-right-color: var(--border) !important; }
+.geofence-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: rgba(0,229,255,0.5) !important;
+  font-size: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+/* Geofence pulse animation */
+.geofence-pulse-ring {
+  animation: geofenceCssPulse 3s ease-out infinite;
+}
+@keyframes geofenceCssPulse {
+  0% { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+<!-- ============ APP SHELL ============ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="logo" title="Brain GPS">
+      <svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16" stroke="var(--cyan)" stroke-width="1.5"/><circle cx="18" cy="18" r="6" fill="var(--cyan)" opacity=".3"/><circle cx="18" cy="18" r="3" fill="var(--cyan)"/><line x1="18" y1="2" x2="18" y2="10" stroke="var(--cyan)" stroke-width="1.5"/><line x1="18" y1="26" x2="18" y2="34" stroke="var(--cyan)" stroke-width="1.5"/><line x1="2" y1="18" x2="10" y2="18" stroke="var(--cyan)" stroke-width="1.5"/><line x1="26" y1="18" x2="34" y2="18" stroke="var(--cyan)" stroke-width="1.5"/></svg>
+    </div>
+    <button class="nav-btn active" data-view="dashboard" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+    <button class="nav-btn" data-view="history" title="Historial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 16,14"/></svg></button>
+    <button class="nav-btn" data-view="geofence" title="Geofence"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/><circle cx="12" cy="12" r="3"/></svg></button>
+    <button class="nav-btn" data-view="ai" title="AI Diagnostics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/><path d="M8 14s-4 2-4 6h16c0-4-4-6-4-6"/><circle cx="12" cy="6" r="1" fill="currentColor"/></svg></button>
+    <button class="nav-btn" data-view="reports" title="Reportes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><polyline points="8,16 12,10 16,14"/></svg></button>
+    <div class="sidebar-spacer"></div>
+    <button class="nav-btn" data-view="settings" title="Configuración"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+  </nav>
+
+  <!-- TOPBAR -->
+  <header id="topbar">
+    <div class="topbar-brand">BRAIN<span> GPS</span></div>
+    <div class="topbar-status"><div class="status-dot"></div><span>SYSTEM ONLINE</span></div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-stat"><span class="topbar-stat-val text-green" id="stat-active">3</span><span class="topbar-stat-label">Active</span></div>
+    <div class="topbar-stat"><span class="topbar-stat-val text-amber" id="stat-alerts">2</span><span class="topbar-stat-label">Alerts</span></div>
+    <div class="topbar-stat"><span class="topbar-stat-val text-cyan" id="stat-km">47.3</span><span class="topbar-stat-label">km Today</span></div>
+    <div id="clock">--:--:--</div>
+  </header>
+
+  <!-- MAP -->
+  <section id="map-area">
+    <div id="leafletMap"></div>
+    <div class="map-overlay">
+      <div class="glass"><span class="text-dim">LAT</span> <span class="mono text-cyan" id="disp-lat">18.4861</span>&nbsp;&nbsp;<span class="text-dim">LNG</span> <span class="mono text-cyan" id="disp-lng">-69.9312</span></div>
+      <div class="glass"><span class="text-dim">SPD</span> <span class="mono text-green" id="disp-spd">0</span> <span class="text-dim">km/h</span>&nbsp;&nbsp;<span class="text-dim">HDG</span> <span class="mono" id="disp-hdg">045°</span></div>
+    </div>
+    <div class="map-zoom-controls">
+      <button class="zoom-btn" id="zoom-in" title="Zoom In">+</button>
+      <button class="zoom-btn" id="zoom-out" title="Zoom Out">−</button>
+    </div>
+    <button class="map-follow-btn active" id="follow-btn">⦿ Follow</button>
+  </section>
+
+  <!-- RIGHT PANEL -->
+  <aside id="right-panel">
+    <!-- Vehicles -->
+    <div class="panel-section">
+      <div class="panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="22" height="12" rx="2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg> VEHICLES</div>
+      <div id="vehicle-list"></div>
+    </div>
+    <!-- AI Diagnostics -->
+    <div class="panel-section" id="ai-panel">
+      <div class="panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> AI DIAGNOSTICS</div>
+      <div id="ai-list"></div>
+    </div>
+    <!-- Controls -->
+    <div class="panel-section">
+      <div class="panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> CONTROLS</div>
+      <button class="btn btn-ghost" style="width:100%;margin-bottom:6px;" id="btn-history">▶ Show Route History</button>
+      <button class="hold-btn" style="width:100%;" id="btn-engine-cut"><div class="hold-fill" id="hold-fill"></div><span>⚡ HOLD — Engine Cut-off</span></button>
+    </div>
+  </aside>
+
+  <!-- BOTTOM METRICS -->
+  <section id="bottom-metrics">
+    <!-- Speed Gauge -->
+    <div class="metric-card" id="mc-speed">
+      <div class="metric-label">Speed</div>
+      <div class="gauge-wrap"><svg id="speedGauge" viewBox="0 0 120 70"></svg></div>
+      <div class="metric-value text-cyan" id="val-speed">0</div>
+      <div class="metric-unit">km/h</div>
+    </div>
+    <!-- Battery -->
+    <div class="metric-card" id="mc-battery">
+      <div class="metric-label">Backup Battery</div>
+      <div class="metric-value" id="val-battery">87</div>
+      <div class="metric-unit">% — 150mAh</div>
+      <div class="metric-bar"><div class="metric-bar-fill" id="bar-battery" style="width:87%;background:var(--green);"></div></div>
+    </div>
+    <!-- GPS Signal -->
+    <div class="metric-card" id="mc-signal">
+      <div class="metric-label">4G Signal</div>
+      <div class="signal-bars" id="signal-bars"></div>
+      <div class="metric-value text-cyan" id="val-signal">Strong</div>
+      <div class="metric-unit">4G LTE</div>
+    </div>
+    <!-- Engine ACC -->
+    <div class="metric-card" id="mc-engine">
+      <div class="metric-label">Engine (ACC)</div>
+      <div class="metric-value text-green" id="val-engine">ON</div>
+      <div class="metric-unit">Ignition Detected</div>
+      <div class="metric-bar"><div class="metric-bar-fill" id="bar-engine" style="width:100%;background:var(--green);"></div></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="footer">
+    <div class="footer-item">ST-901L</div>
+    <div class="footer-item">IMEI: <span class="mono" id="ft-imei">861234567890123</span></div>
+    <div class="footer-item">FW: <span class="mono">v3.2.1</span></div>
+    <div class="footer-item">Waterproof: <span class="text-green">IP65</span></div>
+    <div class="topbar-spacer"></div>
+    <div class="footer-item">Last Sync: <span class="mono" id="ft-sync">--:--:--</span></div>
+  </footer>
+</div>
+
+<!-- ENGINE CUT-OFF MODAL -->
+<div class="modal-overlay" id="modal-engine">
+  <div class="modal-box">
+    <div class="modal-title text-red">⚠ Remote Engine Cut-off</div>
+    <div class="modal-text">This action will send a command to the ST-901L relay to disable the vehicle engine. This is an irreversible remote action until manually restored.<br><br><strong>Vehicle:</strong> <span id="modal-vehicle-name">—</span></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
+      <button class="btn btn-danger" id="modal-confirm">CONFIRM CUT-OFF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTS CONTAINER -->
+<div id="alerts-container"></div>
+
+<script>
+/* ============================================
+   GPS SMART — Core Engine
+   ============================================ */
+
+// ---- DATA: Vehicles ----
+const vehicles = [
+  { id:0, name:'Toyota Hilux', plate:'A-123-456', type:'car', online:true, lat:18.486, lng:-69.931, speed:42, heading:45, battery:87, signal:4, accOn:true, engineCut:false, color:'#00e5ff' },
+  { id:1, name:'Honda CBR 600', plate:'M-789-012', type:'moto', online:true, lat:18.482, lng:-69.928, speed:28, heading:120, battery:65, signal:3, accOn:true, engineCut:false, color:'#00ff88' },
+  { id:2, name:'Freightliner M2', plate:'C-345-678', type:'truck', online:false, lat:18.490, lng:-69.935, speed:0, heading:270, battery:34, signal:1, accOn:false, engineCut:false, color:'#ffaa00' }
+];
+let selectedVehicle = 0;
+let followMode = true;
+let showHistory = false;
+let zoomLevel = 1;
+let mapOffsetX = 0, mapOffsetY = 0;
+
+// ---- DATA: AI Diagnostics ----
+const aiDiagnostics = [
+  { level:'info', code:'SYS_OK', title:'System Nominal', msg:'All sensors are operating within normal parameters. GPS lock acquired with 12 satellites.' },
+  { level:'warning', code:'BATT_DEGR', title:'Battery Degradation', msg:'Backup battery dropped to 34% on Freightliner M2. At this rate, it may not sustain tracking during a power outage longer than 2 hours. Consider replacing soon.' },
+  { level:'critical', code:'VIBR_ANOMALY', title:'Vibration Anomaly', msg:'Unusual vibration pattern detected on Toyota Hilux at 11:42 AM. This could indicate rough terrain, a tire issue, or an impact event. Review dashcam footage.' },
+  { level:'info', code:'P0301_PREDICT', title:'Predictive: Cylinder Misfire', msg:'Based on ignition cycle analysis, Cylinder #2 shows early signs of intermittent misfiring (pattern P0301). This may cause rough idle and increased fuel consumption within 2-3 weeks. Recommend inspection.' }
+];
+
+// ---- DATA: Route history ----
+const routeHistory = [];
+const maxHistoryPoints = 200;
+
+// ---- DATA: Driving reports ----
+const drivingReports = [
+  { start:'06:32', end:'07:15', dist:'12.4', maxSpd:'78', vehicle:0 },
+  { start:'08:00', end:'09:22', dist:'23.1', maxSpd:'95', vehicle:0 },
+  { start:'10:15', end:'10:48', dist:'6.8', maxSpd:'55', vehicle:1 },
+  { start:'07:00', end:'07:45', dist:'18.2', maxSpd:'62', vehicle:1 },
+];
+
+// ---- SPEED LIMIT ----
+let speedLimit = 80;
+
+// ---- DOM REFS ----
+const dispLat = document.getElementById('disp-lat');
+const dispLng = document.getElementById('disp-lng');
+const dispSpd = document.getElementById('disp-spd');
+const dispHdg = document.getElementById('disp-hdg');
+const valSpeed = document.getElementById('val-speed');
+const valBattery = document.getElementById('val-battery');
+const barBattery = document.getElementById('bar-battery');
+const valSignal = document.getElementById('val-signal');
+const valEngine = document.getElementById('val-engine');
+const barEngine = document.getElementById('bar-engine');
+const clockEl = document.getElementById('clock');
+const ftSync = document.getElementById('ft-sync');
+const vehicleListEl = document.getElementById('vehicle-list');
+const aiListEl = document.getElementById('ai-list');
+const alertsContainer = document.getElementById('alerts-container');
+const followBtn = document.getElementById('follow-btn');
+const signalBarsEl = document.getElementById('signal-bars');
+
+// ---- CLOCK ----
+function updateClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-US',{hour12:false});
+  clockEl.textContent = t;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ---- SIGNAL BARS ----
+function buildSignalBars() {
+  signalBarsEl.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'signal-bar';
+    bar.style.height = (6 + i * 4) + 'px';
+    signalBarsEl.appendChild(bar);
+  }
+}
+buildSignalBars();
+
+function updateSignalBars(strength) {
+  const bars = signalBarsEl.querySelectorAll('.signal-bar');
+  bars.forEach((b, i) => b.classList.toggle('active', i < strength));
+  const labels = ['No Signal','Weak','Fair','Good','Strong','Excellent'];
+  valSignal.textContent = labels[strength] || 'Unknown';
+}
+
+// ---- VEHICLE LIST ----
+function renderVehicleList() {
+  vehicleListEl.innerHTML = '';
+  const icons = {
+    car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="20" height="8" rx="2"/><circle cx="7" cy="16" r="2"/><circle cx="17" cy="16" r="2"/><path d="M5 8l2-4h10l2 4"/></svg>',
+    moto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M5 17h6l4-8h4"/></svg>',
+    truck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="14" height="12" rx="1"/><path d="M15 10h4l3 4v4h-7V10z"/><circle cx="7" cy="18" r="2"/><circle cx="19" cy="18" r="2"/></svg>'
+  };
+  vehicles.forEach((v, i) => {
+    const card = document.createElement('div');
+    card.className = 'vehicle-card' + (i === selectedVehicle ? ' selected' : '');
+    card.innerHTML = `
+      <div class="vehicle-icon" style="border-color:${v.color}">${icons[v.type]}</div>
+      <div class="vehicle-info">
+        <div class="vehicle-name">${v.name}</div>
+        <div class="vehicle-plate">${v.plate}</div>
+      </div>
+      <span class="vehicle-status ${v.online?'online':'offline'}">${v.online?'ONLINE':'OFFLINE'}</span>`;
+    card.onclick = () => { selectedVehicle = i; renderVehicleList(); updateMetrics(); };
+    vehicleListEl.appendChild(card);
+  });
+}
+renderVehicleList();
+
+// ---- AI DIAGNOSTICS ----
+function renderAI() {
+  aiListEl.innerHTML = '';
+  const levelClass = {info:'',warning:' warning',critical:' critical'};
+  const icons = {
+    info:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>',
+    warning:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4m0 4h.01"/></svg>',
+    critical:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6m0-6l6 6"/></svg>'
+  };
+  aiDiagnostics.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'ai-card' + levelClass[d.level];
+    card.innerHTML = `<div class="ai-card-header">${icons[d.level]} ${d.title}</div><p>${d.msg}</p>`;
+    aiListEl.appendChild(card);
+  });
+}
+renderAI();
+
+// ---- LEAFLET MAP ENGINE (Real streets of Distrito Nacional, Santo Domingo) ----
+const map = L.map('leafletMap', {
+  center: [18.4741, -69.9000],
+  zoom: 16, // Zoom 16 = street-level names visible
+  zoomControl: false,
+  attributionControl: false
+});
+
+// CartoDB Dark Matter tiles — matches the HUD aesthetic perfectly
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// ---- OSRM-ROUTED REAL STREET WAYPOINTS (Distrito Nacional, Santo Domingo) ----
+// Generated via OpenStreetMap Routing Machine — vehicles follow actual road geometry
+
+// Toyota Hilux: Zona Colonial → Malecón → Av. Lincoln → 27 de Febrero → Av. Núñez de Cáceres
+const routeWaypoints_v0 = [
+  // Calle Salomé Ureña (Start, Zona Colonial)
+  [18.473613,-69.887036],[18.474256,-69.887206],[18.474477,-69.887264],
+  // Heading west along waterfront
+  [18.474311,-69.887562],[18.474136,-69.887867],[18.474059,-69.888011],
+  [18.473691,-69.888826],[18.473552,-69.889128],[18.473300,-69.889577],
+  [18.473127,-69.889844],[18.472783,-69.890433],[18.472468,-69.890924],
+  [18.472232,-69.891254],[18.472109,-69.891487],[18.471963,-69.891913],
+  [18.471839,-69.892283],[18.471717,-69.892662],
+  // Turning south toward Malecón
+  [18.471507,-69.892826],[18.471301,-69.892897],[18.471026,-69.892894],
+  [18.470825,-69.892740],[18.470712,-69.892399],[18.470762,-69.892135],
+  [18.470842,-69.891914],[18.470946,-69.891551],
+  // Heading south along Av. Lincoln
+  [18.470143,-69.891248],[18.469366,-69.890957],[18.468802,-69.890743],
+  [18.468206,-69.890509],[18.467725,-69.890308],[18.467313,-69.890133],
+  // Malecón (Av. George Washington) heading west
+  [18.467057,-69.890347],[18.466817,-69.890592],[18.466664,-69.890778],
+  [18.466419,-69.891105],[18.466054,-69.891625],[18.465606,-69.892307],
+  [18.465380,-69.892669],[18.465190,-69.892989],[18.464876,-69.893513],
+  [18.464731,-69.893867],[18.464546,-69.894092],[18.464301,-69.894466],
+  [18.464054,-69.894872],[18.463680,-69.895494],[18.463519,-69.895781],
+  [18.463342,-69.896092],[18.463127,-69.896455],[18.462853,-69.896930],
+  [18.462624,-69.897319],[18.462554,-69.897443],[18.462303,-69.897855],
+  [18.462114,-69.898182],[18.461881,-69.898586],[18.461729,-69.898887],
+  [18.461596,-69.899206],[18.461502,-69.899464],[18.461346,-69.899935],
+  // Continuing west on Malecón
+  [18.461200,-69.900413],[18.461057,-69.900971],[18.460912,-69.901600],
+  [18.460824,-69.902101],[18.460615,-69.903232],[18.460532,-69.903614],
+  [18.460377,-69.904064],[18.460158,-69.904650],[18.459930,-69.905108],
+  // Malecón curves
+  [18.459182,-69.906380],[18.458883,-69.906854],[18.458736,-69.907115],
+  [18.458427,-69.907677],[18.458213,-69.908119],[18.457936,-69.908852],
+  [18.457652,-69.909757],[18.457430,-69.910426],[18.457249,-69.911018],
+  [18.457017,-69.911759],[18.456826,-69.912390],[18.456653,-69.912862],
+  [18.456535,-69.913122],[18.456300,-69.913581],[18.456114,-69.914033],
+  [18.455997,-69.914530],[18.455894,-69.915089],[18.455756,-69.915820],
+  // Turning north on Av. Núñez de Cáceres
+  [18.455593,-69.916359],[18.455374,-69.916726],[18.454478,-69.917815],
+  [18.454219,-69.918139],[18.453975,-69.918558],[18.453492,-69.919855],
+  [18.453438,-69.919999],[18.453226,-69.920560],[18.452904,-69.921079],
+  [18.452680,-69.921325],[18.452321,-69.921619],
+  // Av. 27 de Febrero heading east
+  [18.452126,-69.922002],[18.452067,-69.922198],[18.452078,-69.922380],
+  [18.452145,-69.922544],[18.452226,-69.922680],[18.452427,-69.922852],
+  [18.452974,-69.923132],[18.453584,-69.923485],[18.454732,-69.924136],
+  [18.455383,-69.924500],
+  // Heading back north/east
+  [18.455135,-69.925051],[18.455056,-69.925495],[18.455313,-69.925699],
+  [18.455831,-69.926140],[18.456040,-69.926237],[18.456291,-69.926323],
+  [18.456631,-69.926447],[18.456768,-69.926432],
+  // Return north through inner streets
+  [18.456975,-69.926824],[18.457326,-69.926769],[18.458084,-69.926696],
+  [18.458261,-69.926232],[18.458285,-69.925930],[18.458374,-69.925651],
+  [18.458530,-69.925557],[18.458733,-69.925477],[18.459087,-69.925301],
+  [18.459448,-69.925055],[18.459805,-69.924715],[18.460067,-69.924403],
+  // Heading back east
+  [18.460677,-69.923432],[18.461008,-69.922913],[18.461217,-69.922583],
+  [18.462511,-69.920564],[18.462929,-69.919906],[18.463005,-69.919788],
+  // North on Av. Lincoln  
+  [18.464796,-69.920641],[18.465049,-69.920754],[18.465887,-69.921110],
+  [18.466250,-69.921250],[18.466648,-69.921396],[18.467160,-69.921598],
+  [18.467410,-69.921775],[18.467998,-69.922416],[18.468500,-69.922978],
+  [18.468934,-69.923484],[18.469108,-69.923634],[18.469616,-69.924011],
+  [18.469973,-69.924228],[18.470653,-69.924745],[18.471486,-69.925075],
+  [18.472094,-69.925317],[18.472582,-69.925524],[18.473160,-69.925776],
+  [18.474316,-69.926237],
+  // Final stretch back to start area
+  [18.474305,-69.926557],[18.474307,-69.927185],[18.473742,-69.927117],
+  [18.472701,-69.926991],[18.472337,-69.926947],[18.472460,-69.926217],
+  [18.471337,-69.926062],[18.470981,-69.926041],[18.470374,-69.926190],
+  [18.470262,-69.926769],[18.469979,-69.928247],[18.469899,-69.928656],
+  [18.469504,-69.930822],[18.469432,-69.931194],[18.469360,-69.931582],
+  // West on connecting streets
+  [18.469246,-69.931976],[18.469094,-69.932304],[18.468713,-69.933058],
+  [18.468518,-69.933471],[18.468113,-69.934236],[18.467136,-69.936111],
+  [18.467005,-69.936430],[18.466529,-69.937327],[18.466206,-69.937967],
+  // Heading north toward origin
+  [18.466493,-69.938129],[18.466699,-69.938245],[18.467124,-69.938484],
+  [18.467498,-69.938687],[18.468045,-69.938984],[18.468589,-69.939283],
+  [18.469737,-69.939951],[18.470798,-69.940557],[18.471694,-69.941053],
+  [18.472319,-69.941400],[18.472903,-69.941727],[18.473621,-69.942104],
+  [18.474258,-69.942466],[18.474196,-69.942579],[18.473671,-69.943621],
+  [18.473358,-69.944232],[18.472510,-69.945892]
+];
+
+// Honda CBR 600: Zona Colonial circuit (Calle Las Damas → Padre Billini → Las Mercedes → Luperón)
+const routeWaypoints_v1 = [
+  // Calle Las Damas (oldest street in the Americas)
+  [18.473546,-69.882663],[18.474163,-69.882756],[18.474861,-69.882858],
+  [18.475460,-69.882960],[18.475568,-69.883916],[18.475656,-69.884823],
+  [18.475672,-69.885109],[18.475328,-69.885705],[18.474898,-69.886493],
+  // Through Zona Colonial heading west
+  [18.474477,-69.887264],[18.474311,-69.887562],[18.474136,-69.887867],
+  [18.474059,-69.888011],[18.473691,-69.888826],[18.473552,-69.889128],
+  // South on side streets
+  [18.472874,-69.888901],[18.472368,-69.888752],[18.471674,-69.888557],
+  [18.470421,-69.888246],[18.470845,-69.887094],[18.471438,-69.887254],
+  // Calle Padre Billini (east-west)
+  [18.471945,-69.887391],[18.472155,-69.886661],[18.472352,-69.885859],
+  [18.472539,-69.885148],[18.472707,-69.884424],
+  // South toward waterfront
+  [18.471925,-69.884307],[18.470653,-69.884145],[18.470220,-69.884093],
+  [18.469701,-69.884028],[18.469383,-69.884646],[18.469239,-69.884925],
+  [18.469052,-69.885293],[18.468976,-69.885466],[18.468909,-69.885645],
+  // East along southern streets
+  [18.468825,-69.885882],[18.468519,-69.886746],[18.468230,-69.887562],
+  [18.467991,-69.888218],[18.467954,-69.888319],[18.467870,-69.888543],
+  [18.467856,-69.888713],[18.467869,-69.888760],[18.467913,-69.888872],
+  [18.467961,-69.889092],[18.467964,-69.889160],[18.467936,-69.889324],
+  [18.467800,-69.889581],[18.467679,-69.889742],
+  // North heading back up
+  [18.467862,-69.889932],[18.468341,-69.890100],[18.469519,-69.890513],
+  [18.470283,-69.890797],[18.470143,-69.891248],[18.469952,-69.891837],
+  [18.469863,-69.892125],
+  // Circling through inner streets
+  [18.469573,-69.892064],[18.469451,-69.892072],[18.469260,-69.892230],
+  [18.468951,-69.892118],[18.468995,-69.891998],[18.469168,-69.891524],
+  [18.469366,-69.890957],[18.469519,-69.890513],[18.469863,-69.889615],
+  [18.470117,-69.888953],
+  // Heading back to Las Damas
+  [18.471474,-69.889326],[18.472118,-69.889527],[18.472657,-69.889702],
+  [18.473127,-69.889844],[18.473026,-69.890017],[18.472783,-69.890433],
+  [18.472468,-69.890924],[18.472232,-69.891254],[18.472109,-69.891487],
+  [18.472578,-69.891636],[18.473112,-69.891269],[18.473847,-69.890701],
+  [18.474153,-69.890433],[18.474303,-69.890314],[18.475191,-69.889314],
+  [18.475562,-69.888932],[18.475918,-69.888566],
+  // Final return to start
+  [18.475570,-69.888448],[18.475659,-69.888054],[18.475784,-69.887600],
+  [18.476025,-69.886814],[18.474898,-69.886493],[18.474406,-69.886369],
+  [18.474536,-69.885568],[18.474669,-69.884686],[18.473591,-69.884561],
+  [18.473108,-69.884467],[18.472707,-69.884424],[18.471925,-69.884307],
+  [18.472172,-69.883668],[18.472310,-69.883310],[18.472608,-69.882518],
+  [18.472917,-69.882566],[18.473146,-69.882602],[18.473546,-69.882663]
+];
+
+const allRoutes = [routeWaypoints_v0, routeWaypoints_v1, []];
+const waypointIndex = [0, 0, 0];
+
+// ---- REALISTIC SVG VEHICLE ICONS ----
+const vehicleSVGs = {
+  car: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(20,20)">
+      <ellipse rx="8" ry="5" fill="COLOR" opacity="0.25" transform="translate(0,3)"/><!-- shadow -->
+      <rect x="-6" y="-14" width="12" height="28" rx="5" fill="COLOR" opacity="0.9"/>
+      <rect x="-5" y="-8" width="10" height="7" rx="2" fill="#000" opacity="0.35"/><!-- windshield -->
+      <rect x="-5" y="5" width="10" height="5" rx="2" fill="#000" opacity="0.25"/><!-- rear window -->
+      <rect x="-7" y="-3" width="3" height="5" rx="1" fill="COLOR" opacity="0.6"/><!-- left mirror -->
+      <rect x="4" y="-3" width="3" height="5" rx="1" fill="COLOR" opacity="0.6"/><!-- right mirror -->
+      <circle cx="-4" cy="-13" r="1.5" fill="#fff" opacity="0.9"/><!-- left headlight -->
+      <circle cx="4" cy="-13" r="1.5" fill="#fff" opacity="0.9"/><!-- right headlight -->
+      <rect x="-3" y="12" width="2.5" height="2" rx="0.5" fill="#ff3333" opacity="0.8"/><!-- left taillight -->
+      <rect x="1" y="12" width="2.5" height="2" rx="0.5" fill="#ff3333" opacity="0.8"/><!-- right taillight -->
+    </g>
+  </svg>`,
+  moto: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(20,20)">
+      <ellipse rx="5" ry="3" fill="COLOR" opacity="0.2" transform="translate(0,3)"/>
+      <rect x="-3" y="-14" width="6" height="22" rx="3" fill="COLOR" opacity="0.85"/>
+      <rect x="-2" y="-7" width="4" height="4" rx="1" fill="#000" opacity="0.3"/>
+      <circle cx="0" cy="-13" r="2" fill="#fff" opacity="0.9"/><!-- headlight -->
+      <circle cx="0" cy="9" r="1.5" fill="#ff3333" opacity="0.8"/><!-- taillight -->
+      <rect x="-6" y="-2" width="12" height="2" rx="1" fill="COLOR" opacity="0.5"/><!-- handlebars -->
+    </g>
+  </svg>`,
+  truck: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(20,20)">
+      <ellipse rx="10" ry="6" fill="COLOR" opacity="0.2" transform="translate(0,4)"/>
+      <rect x="-8" y="-16" width="16" height="32" rx="3" fill="COLOR" opacity="0.85"/>
+      <rect x="-7" y="-10" width="14" height="6" rx="2" fill="#000" opacity="0.3"/><!-- windshield -->
+      <rect x="-7" y="0" width="14" height="14" rx="1" fill="COLOR" opacity="0.5"/><!-- cargo -->
+      <line x1="-7" y1="4" x2="7" y2="4" stroke="#000" stroke-width="0.5" opacity="0.3"/>
+      <line x1="-7" y1="8" x2="7" y2="8" stroke="#000" stroke-width="0.5" opacity="0.3"/>
+      <circle cx="-5" cy="-15" r="1.5" fill="#fff" opacity="0.9"/>
+      <circle cx="5" cy="-15" r="1.5" fill="#fff" opacity="0.9"/>
+      <rect x="-4" y="14" width="3" height="2" rx="0.5" fill="#ff3333" opacity="0.8"/>
+      <rect x="1" y="14" width="3" height="2" rx="0.5" fill="#ff3333" opacity="0.8"/>
+    </g>
+  </svg>`
+};
+
+function createVehicleIcon(vehicleObj, isSelected) {
+  const size = isSelected ? 44 : 32;
+  const glow = isSelected ? 12 : 4;
+  const svg = (vehicleSVGs[vehicleObj.type] || vehicleSVGs.car).replace(/COLOR/g, vehicleObj.color);
+  const heading = vehicleObj.heading || 0;
+  return L.divIcon({
+    className: 'vehicle-marker-icon',
+    html: `<div style="
+      width:${size}px; height:${size}px;
+      transform: rotate(${heading}deg);
+      transition: transform 1.5s ease, filter 0.5s;
+      filter: drop-shadow(0 0 ${glow}px ${vehicleObj.color});
+    ">${svg}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2]
+  });
+}
+
+// ---- SPEED HEATMAP TRAIL ----
+// Store trail data with speed per segment
+const trailData = [[], [], []]; // {lat, lng, speed} for each vehicle
+const heatmapLayers = []; // LayerGroup per vehicle
+for (let i = 0; i < 3; i++) {
+  heatmapLayers.push(L.layerGroup().addTo(map));
+}
+
+function speedToColor(speed) {
+  // Green (0-30) → Yellow (30-60) → Red (60+)
+  if (speed <= 30) {
+    const t = speed / 30;
+    const r = Math.round(0 + t * 255);
+    const g = Math.round(255);
+    return `rgb(${r},${g},0)`;
+  } else if (speed <= 60) {
+    const t = (speed - 30) / 30;
+    const r = 255;
+    const g = Math.round(255 - t * 170);
+    return `rgb(${r},${g},0)`;
+  } else {
+    const t = Math.min((speed - 60) / 40, 1);
+    const r = 255;
+    const g = Math.round(85 - t * 85);
+    return `rgb(${r},${g},${Math.round(t * 50)})`;
+  }
+}
+
+function rebuildHeatmapTrail(vehicleIdx) {
+  const layer = heatmapLayers[vehicleIdx];
+  layer.clearLayers();
+  const data = trailData[vehicleIdx];
+  if (data.length < 2) return;
+  
+  const visible = showHistory ? 0.85 : 0.45;
+  const w = showHistory ? 5 : 3;
+  
+  for (let j = 1; j < data.length; j++) {
+    const p1 = data[j-1];
+    const p2 = data[j];
+    const color = speedToColor(p2.speed);
+    L.polyline([[p1.lat, p1.lng], [p2.lat, p2.lng]], {
+      color: color,
+      weight: w,
+      opacity: visible,
+      lineCap: 'round'
+    }).addTo(layer);
+  }
+}
+
+const vehicleMarkers = [];
+
+vehicles.forEach((v, i) => {
+  if (!v.online) {
+    vehicleMarkers.push(null);
+    return;
+  }
+  const marker = L.marker([v.lat, v.lng], {
+    icon: createVehicleIcon(v, i === selectedVehicle)
+  }).addTo(map);
+  marker.bindTooltip(v.name, {
+    permanent: i === selectedVehicle,
+    direction: 'right',
+    offset: [18, 0],
+    className: 'hud-tooltip'
+  });
+  vehicleMarkers.push(marker);
+});
+
+// ---- GEOFENCE CIRCLE ----
+const geofenceCenter = [18.4741, -69.9000];
+const geofenceCircle = L.circle(geofenceCenter, {
+  radius: 2500,
+  color: '#00e5ff',
+  weight: 2,
+  opacity: 0.4,
+  fillColor: '#00e5ff',
+  fillOpacity: 0.03,
+  dashArray: '8,6'
+}).addTo(map);
+geofenceCircle.bindTooltip('GEOFENCE ZONE', { permanent: true, direction: 'center', className: 'hud-tooltip geofence-label' });
+
+const geofencePulse = L.circle(geofenceCenter, {
+  radius: 2500,
+  color: '#00e5ff',
+  weight: 1,
+  opacity: 0.2,
+  fillOpacity: 0,
+  className: 'geofence-pulse-ring'
+}).addTo(map);
+
+// ---- UPDATE MAP MARKERS ----
+function updateMapMarkers() {
+  vehicles.forEach((v, i) => {
+    if (!v.online || !vehicleMarkers[i]) return;
+    vehicleMarkers[i].setLatLng([v.lat, v.lng]);
+    vehicleMarkers[i].setIcon(createVehicleIcon(v, i === selectedVehicle));
+    // Rebuild heatmap trail
+    rebuildHeatmapTrail(i);
+  });
+  // Follow mode
+  if (followMode) {
+    const sv = vehicles[selectedVehicle];
+    map.panTo([sv.lat, sv.lng], { animate: true, duration: 1.5 });
+  }
+}
+
+// ---- SPEED GAUGE (SVG) ----
+function renderSpeedGauge(speed) {
+  const svg = document.getElementById('speedGauge');
+  const maxSpeed = 160;
+  const pct = Math.min(speed / maxSpeed, 1);
+  const startAngle = -210;
+  const sweep = 240;
+  const endAngle = startAngle + sweep * pct;
+  const cx = 60, cy = 55, r = 40;
+  function polarToCart(angle) {
+    const rad = (angle * Math.PI) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+  const s = polarToCart(startAngle);
+  const e = polarToCart(endAngle);
+  const largeArc = (sweep * pct) > 180 ? 1 : 0;
+  const color = speed > speedLimit ? 'var(--red)' : 'var(--cyan)';
+  svg.innerHTML = `
+    <path d="M ${polarToCart(startAngle).x} ${polarToCart(startAngle).y} A ${r} ${r} 0 1 1 ${polarToCart(startAngle + sweep).x} ${polarToCart(startAngle + sweep).y}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M ${s.x} ${s.y} A ${r} ${r} 0 ${largeArc} 1 ${e.x} ${e.y}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="${e.x}" cy="${e.y}" r="4" fill="${color}" opacity="0.8"/>
+    <text x="${cx}" y="${cy + 2}" text-anchor="middle" fill="${color}" font-family="JetBrains Mono" font-size="10" font-weight="700">${speed > speedLimit ? 'OVER' : 'OK'}</text>`;
+}
+renderSpeedGauge(0);
+
+// ---- METRICS UPDATE ----
+function updateMetrics() {
+  const v = vehicles[selectedVehicle];
+  dispLat.textContent = v.lat.toFixed(4);
+  dispLng.textContent = v.lng.toFixed(4);
+  dispSpd.textContent = Math.round(v.speed);
+  dispHdg.textContent = Math.round(v.heading) + '°';
+  valSpeed.textContent = Math.round(v.speed);
+  valSpeed.style.color = v.speed > speedLimit ? 'var(--red)' : 'var(--cyan)';
+  renderSpeedGauge(Math.round(v.speed));
+  valBattery.textContent = v.battery;
+  barBattery.style.width = v.battery + '%';
+  barBattery.style.background = v.battery > 40 ? 'var(--green)' : v.battery > 20 ? 'var(--amber)' : 'var(--red)';
+  valBattery.className = 'metric-value ' + (v.battery > 40 ? 'text-green' : v.battery > 20 ? 'text-amber' : 'text-red');
+  updateSignalBars(v.signal);
+  valEngine.textContent = v.accOn ? 'ON' : 'OFF';
+  valEngine.className = 'metric-value ' + (v.accOn ? 'text-green' : 'text-red');
+  barEngine.style.width = v.accOn ? '100%' : '0%';
+  barEngine.style.background = v.accOn ? 'var(--green)' : 'var(--red)';
+  document.getElementById('mc-engine').querySelector('.metric-unit').textContent = v.engineCut ? 'ENGINE CUT ACTIVE' : (v.accOn ? 'Ignition Detected' : 'Ignition Off');
+  ftSync.textContent = new Date().toLocaleTimeString('en-US',{hour12:false});
+}
+updateMetrics();
+
+// ---- SIMULATION ENGINE (every 3 seconds) — follows real streets ----
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function simulateMovement() {
+  vehicles.forEach((v, i) => {
+    if (!v.online || !v.accOn || v.engineCut) return;
+    const route = allRoutes[i];
+    if (!route || route.length < 2) return;
+    
+    // Advance to next waypoint
+    const idx = waypointIndex[i];
+    const nextIdx = (idx + 1) % route.length;
+    const target = route[nextIdx];
+    
+    // Interpolate toward next waypoint with some noise
+    const noise = 0.00005;
+    v.lat = lerp(v.lat, target[0], 0.3) + (Math.random() - 0.5) * noise;
+    v.lng = lerp(v.lng, target[1], 0.3) + (Math.random() - 0.5) * noise;
+    
+    // Check if close enough to advance
+    const dist = Math.sqrt(Math.pow(v.lat - target[0], 2) + Math.pow(v.lng - target[1], 2));
+    if (dist < 0.0005) {
+      waypointIndex[i] = nextIdx;
+    }
+    
+    // Heading from movement direction
+    v.heading = (Math.atan2(target[1] - v.lng, target[0] - v.lat) * 180 / Math.PI + 360) % 360;
+    
+    // Speed based on distance to waypoint (realistic deceleration)
+    v.speed = Math.max(15, Math.min(85, dist * 200000 + (Math.random() - 0.3) * 8));
+    
+    // Signal jitter
+    v.signal = Math.max(1, Math.min(5, v.signal + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 1 : -1) : 0)));
+    
+    // Record heatmap trail data (with speed for color coding)
+    trailData[i].push({ lat: v.lat, lng: v.lng, speed: v.speed });
+    if (trailData[i].length > 120) trailData[i].shift();
+    // Also record for the global route history
+    if (v.id === selectedVehicle) {
+      routeHistory.push({ lat: v.lat, lng: v.lng });
+      if (routeHistory.length > maxHistoryPoints) routeHistory.shift();
+    }
+  });
+  
+  updateMapMarkers();
+  updateMetrics();
+  
+  // Battery drain simulation
+  vehicles[2].battery = Math.max(5, vehicles[2].battery - 0.1);
+  
+  // Speed alert
+  const sv = vehicles[selectedVehicle];
+  if (sv.speed > speedLimit) {
+    addAlert('warn', 'Speed Alert', `${sv.name} exceeding ${speedLimit} km/h (current: ${Math.round(sv.speed)} km/h)`);
+    document.getElementById('mc-speed').style.borderColor = 'var(--red)';
+    document.getElementById('mc-speed').style.animation = 'healthPulse .5s infinite';
+  } else {
+    document.getElementById('mc-speed').style.borderColor = '';
+    document.getElementById('mc-speed').style.animation = '';
+  }
+}
+setInterval(simulateMovement, 3000);
+
+// ---- ALERTS ----
+function addAlert(type, title, msg) {
+  const toast = document.createElement('div');
+  toast.className = 'alert-toast alert-' + type;
+  const now = new Date().toLocaleTimeString('en-US',{hour12:false});
+  toast.innerHTML = `
+    <div class="alert-body">
+      <div class="alert-title">${title}</div>
+      <div style="font-size:11px;color:var(--text-secondary);margin:2px 0;">${msg}</div>
+      <div class="alert-time">${now}</div>
+    </div>
+    <button class="alert-close" onclick="this.parentElement.remove()">✕</button>`;
+  alertsContainer.prepend(toast);
+  // Auto-remove after 8 seconds
+  setTimeout(() => { if (toast.parentElement) toast.remove(); }, 8000);
+  // Update alert count
+  const count = alertsContainer.children.length;
+  document.getElementById('stat-alerts').textContent = count;
+  // Voice feedback
+  speak(title + '. ' + msg);
+}
+
+// Random alert simulator
+setInterval(() => {
+  const alerts = [
+    { type:'info', title:'Movement Detected', msg:'Honda CBR 600 started moving without ignition key.' },
+    { type:'warn', title:'Vibration/Shock', msg:'Impact detected on Toyota Hilux. Severity: Moderate.' },
+    { type:'danger', title:'Low Battery', msg:'Freightliner M2 backup battery critically low (5%).' },
+    { type:'info', title:'Geofence Check', msg:'All vehicles within designated safe zone.' }
+  ];
+  const a = alerts[Math.floor(Math.random() * alerts.length)];
+  addAlert(a.type, a.title, a.msg);
+}, 15000);
+
+// ---- VOICE FEEDBACK (Web Speech API) ----
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.1; u.pitch = 0.9; u.volume = 0.5;
+  u.lang = 'en-US';
+  speechSynthesis.speak(u);
+}
+
+// Initial system voice
+setTimeout(() => speak('AntiGravity GPS System Online. All sensors nominal.'), 2000);
+
+// ---- CONTROLS ----
+// Follow toggle
+followBtn.addEventListener('click', () => {
+  followMode = !followMode;
+  followBtn.classList.toggle('active', followMode);
+  followBtn.textContent = followMode ? '⦿ Following' : '⦿ Follow';
+});
+
+// Zoom (Leaflet native)
+document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
+document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
+
+// History route button
+document.getElementById('btn-history').addEventListener('click', function() {
+  showHistory = !showHistory;
+  this.textContent = showHistory ? '■ Hide Route History' : '▶ Show Route History';
+  this.classList.toggle('btn-cyan', showHistory);
+});
+
+// Engine cut-off (hold to confirm)
+const holdBtn = document.getElementById('btn-engine-cut');
+const holdFill = document.getElementById('hold-fill');
+const modalOverlay = document.getElementById('modal-engine');
+let holdTimer = null, holdProgress = 0;
+
+holdBtn.addEventListener('mousedown', () => {
+  holdProgress = 0;
+  holdTimer = setInterval(() => {
+    holdProgress += 2;
+    holdFill.style.width = holdProgress + '%';
+    if (holdProgress >= 100) {
+      clearInterval(holdTimer);
+      holdFill.style.width = '0%';
+      // Show modal
+      document.getElementById('modal-vehicle-name').textContent = vehicles[selectedVehicle].name;
+      modalOverlay.classList.add('show');
+    }
+  }, 60);
+});
+holdBtn.addEventListener('mouseup', () => { clearInterval(holdTimer); holdFill.style.width = '0%'; });
+holdBtn.addEventListener('mouseleave', () => { clearInterval(holdTimer); holdFill.style.width = '0%'; });
+
+document.getElementById('modal-cancel').addEventListener('click', () => modalOverlay.classList.remove('show'));
+document.getElementById('modal-confirm').addEventListener('click', () => {
+  const v = vehicles[selectedVehicle];
+  v.engineCut = true; v.accOn = false; v.speed = 0;
+  modalOverlay.classList.remove('show');
+  addAlert('danger', 'Engine Cut-off Executed', `Remote relay command sent to ${v.name}. Engine disabled.`);
+  updateMetrics();
+});
+
+// ---- NAV BUTTONS ----
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ---- KM COUNTER ----
+let totalKm = 47.3;
+setInterval(() => {
+  vehicles.forEach(v => { if (v.online && v.accOn && !v.engineCut) totalKm += 0.02; });
+  document.getElementById('stat-km').textContent = totalKm.toFixed(1);
+}, 3000);
+</script>
+</body>
+</html>
