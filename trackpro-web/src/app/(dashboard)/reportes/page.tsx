@@ -109,7 +109,7 @@ type DriverStat = { name: string; driverId: string; trips: number; km: number; a
 type AlertCategory = { category: string; count: number; color: string }
 type AlertSeverity = { critical: number; warning: number; info: number }
 type DtcCode = { code: string; desc: string; count: number; vehicle: string }
-type VehicleMaintenance = { id: string; name: string; odometer: string; nextOilKm: string; status: string; dtcCount: number }
+type VehicleMaintenance = { id: string; name: string; odometer: string | number; nextOilKm: string | number; status: string; dtcCount: number }
 type UpcomingService = { service: string; vehicle: string; dueInKm: number; urgency: string }
 
 type ReportData = {
