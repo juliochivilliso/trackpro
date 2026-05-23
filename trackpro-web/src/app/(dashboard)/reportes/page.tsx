@@ -103,24 +103,25 @@ function TabButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
 }
 
 type KpiCard = { label: string; value: string; delta: string }
-type ChartDay = { day: string; km?: number; count?: number }
+type KmDay = { day: string; km: number }
+type AlertTrendDay = { day: string; count: number }
 type VehicleRank = { id: string; name: string; km: number; trips: number; fuel: number }
 type DriverStat = { name: string; driverId: string; trips: number; km: number; avgSpeed: number; fuelEff: string; score: number }
 type AlertCategory = { category: string; count: number; color: string }
 type AlertSeverity = { critical: number; warning: number; info: number }
 type DtcCode = { code: string; desc: string; count: number; vehicle: string }
-type VehicleMaintenance = { id: string; name: string; odometer: string | number; nextOilKm: string | number; status: string; dtcCount: number }
+type VehicleMaintenance = { id: string; name: string; odometer: number; nextOilKm: number; status: string; dtcCount: number }
 type UpcomingService = { service: string; vehicle: string; dueInKm: number; urgency: string }
 
 type ReportData = {
   kpiCards: KpiCard[];
-  weeklyKmChart: ChartDay[];
+  weeklyKmChart: KmDay[];
   vehicleRanking: VehicleRank[];
   driverStats: DriverStat[];
   alertsByCategory: AlertCategory[];
   alertsBySeverity: AlertSeverity;
   topDtcCodes: DtcCode[];
-  dailyAlertTrend: ChartDay[];
+  dailyAlertTrend: AlertTrendDay[];
   vehicleMaintenanceStatus: VehicleMaintenance[];
   maintenanceSummary: { alDia: number; proximos: number; vencidos: number };
   upcomingServices: UpcomingService[];
@@ -128,7 +129,7 @@ type ReportData = {
 
 // --- TAB 1: Resumen de Flota ---
 function ResumenTab({ data }: { data: ReportData }) {
-  const maxKm = Math.max(...data.weeklyKmChart.map((d) => d.km ?? 0));
+  const maxKm = Math.max(...data.weeklyKmChart.map((d) => d.km));
 
   return (
     <div className="space-y-6">
@@ -152,7 +153,7 @@ function ResumenTab({ data }: { data: ReportData }) {
               return (
                 <div key={i} className="flex flex-col items-center flex-1 gap-2 group">
                   <div className="w-full flex justify-center items-end relative h-[180px] group-hover:opacity-80 transition-opacity">
-                    <div 
+                    <div
                       className="w-10 bg-gradient-to-t from-blue-600/40 to-blue-400/80 rounded-t-md transition-all duration-500 relative"
                       style={{ height: `${Math.max(heightPct, 5)}%` }}
                     >
