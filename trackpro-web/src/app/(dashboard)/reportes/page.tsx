@@ -103,7 +103,7 @@ function TabButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
 }
 
 type KpiCard = { label: string; value: string; delta: string }
-type ChartDay = { day: string; km: number; count?: number }
+type ChartDay = { day: string; km?: number; count?: number }
 type VehicleRank = { id: string; name: string; km: number; trips: number; fuel: number }
 type DriverStat = { name: string; driverId: string; trips: number; km: number; avgSpeed: number; fuelEff: string; score: number }
 type AlertCategory = { category: string; count: number; color: string }
