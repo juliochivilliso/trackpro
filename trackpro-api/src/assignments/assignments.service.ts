@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AssignmentsService {
@@ -58,7 +59,7 @@ export class AssignmentsService {
     equipmentId: number;
     driverId?: number;
   }) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Crear o encontrar el vehículo
       const vehicle = await tx.vehicle.upsert({
         where: { plate: data.vehicle.plate },
