@@ -128,7 +128,7 @@ type ReportData = {
 
 // --- TAB 1: Resumen de Flota ---
 function ResumenTab({ data }: { data: ReportData }) {
-  const maxKm = Math.max(...data.weeklyKmChart.map((d) => d.km));
+  const maxKm = Math.max(...data.weeklyKmChart.map((d) => d.km ?? 0));
 
   return (
     <div className="space-y-6">
