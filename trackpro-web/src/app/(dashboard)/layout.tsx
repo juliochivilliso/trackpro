@@ -113,7 +113,7 @@ export default function DashboardLayout({
 
             {/* ── PORTAL TRIAX ── */}
             <div className="pt-4 mt-4 border-t border-[var(--color-border-glass)]">
-              <a href="http://localhost:3001" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border-glass)] transition-colors group">
+              <a href="http://51.161.107.103:3001" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border-glass)] transition-colors group">
                 <ExternalLink className="w-5 h-5 text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent-blue)] transition-colors" />
                 <span className="font-semibold text-sm">Portal TRIAX</span>
               </a>
