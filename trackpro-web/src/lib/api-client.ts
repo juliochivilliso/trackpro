@@ -3,7 +3,7 @@
 // Ninguna página depende de que el backend esté activo.
 // ────────────────────────────────────────────────────────────────────────────
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T | null> {
   try {

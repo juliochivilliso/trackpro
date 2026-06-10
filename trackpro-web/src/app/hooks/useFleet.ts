@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { API_BASE } from '../../lib/api-client';
 
 export type DeviceUnit = {
   model: string;
@@ -941,7 +942,7 @@ export function useFleet() {
     let cancelled = false;
     const fetchApiVehicles = async () => {
       try {
-        const res = await fetch('http://localhost:4000/vehicles');
+        const res = await fetch(`${API_BASE}/vehicles`);
         if (!res.ok || cancelled) return;
         const data: ApiVehicleResponse[] = await res.json();
         const apiVehicles: Vehicle[] = data.map(v => ({

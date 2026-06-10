@@ -120,14 +120,14 @@ export default function Dashboard() {
                   <Zap className="w-8 h-8 text-red-500" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white text-center mb-2">Confirmar Corte de Motor</h3>
+              <h3 className="text-xl font-bold text-[var(--color-text-primary)] text-center mb-2">Confirmar Corte de Motor</h3>
               <p className="text-[var(--color-text-secondary)] text-center mb-6">
-                Esta acción detendrá el motor del vehículo <span className="font-semibold text-white">{cutEngineModal.vehicleName}</span> (<span className="font-mono">{cutEngineModal.vehicleId}</span>) de forma remota. ¿Estás seguro?
+                Esta acción detendrá el motor del vehículo <span className="font-semibold text-[var(--color-text-primary)]">{cutEngineModal.vehicleName}</span> (<span className="font-mono">{cutEngineModal.vehicleId}</span>) de forma remota. ¿Estás seguro?
               </p>
               <div className="flex gap-4">
                 <button 
                   onClick={() => setCutEngineModal({ open: false, vehicleId: "", vehicleName: "" })}
-                  className="flex-1 py-2.5 rounded-xl border border-[var(--color-border-glass)] hover:bg-white/5 text-white font-medium transition-colors"
+                  className="flex-1 py-2.5 rounded-xl border border-[var(--color-border-glass)] hover:bg-white/5 text-[var(--color-text-primary)] font-medium transition-colors"
                 >
                   Cancelar
                 </button>

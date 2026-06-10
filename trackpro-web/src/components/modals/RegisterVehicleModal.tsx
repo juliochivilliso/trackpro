@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Car, Cpu, User, Check, Loader2 } from "lucide-react";
+import { API_BASE } from '../../lib/api-client';
 
 interface Equipment {
   id: number;
@@ -52,10 +53,9 @@ export default function RegisterVehicleModal({ isOpen, onClose, onSuccess, onReg
 
   const fetchData = async () => {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
       const [eqRes, drRes] = await Promise.all([
-        fetch(`${apiBase}/equipment`),
-        fetch(`${apiBase}/drivers`),
+        fetch(`${API_BASE}/equipment`),
+        fetch(`${API_BASE}/drivers`),
       ]);
       const eqData = await eqRes.json();
       const drData = await drRes.json();
@@ -69,8 +69,7 @@ export default function RegisterVehicleModal({ isOpen, onClose, onSuccess, onReg
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-      const res = await fetch(`${apiBase}/assignments/integrated`, {
+      const res = await fetch(`${API_BASE}/assignments/integrated`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

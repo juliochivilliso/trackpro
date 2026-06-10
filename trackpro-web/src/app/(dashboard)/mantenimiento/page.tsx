@@ -79,7 +79,7 @@ export default function MantenimientoPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <Wrench className="w-6 h-6 text-blue-400" />
-            <h1 className="text-2xl font-black text-white tracking-tight">Centro de Mantenimiento</h1>
+            <h1 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight">Centro de Mantenimiento</h1>
           </div>
           <p className="text-sm text-gray-400 pl-9">
             Gestión centralizada de vehículos, conductores y equipos GPS.
@@ -133,7 +133,7 @@ export default function MantenimientoPage() {
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 ${mod.iconBg}`}>
                   <Icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-black text-white tracking-tight mb-2">{mod.title}</h3>
+                <h3 className="text-lg font-black text-[var(--color-text-primary)] tracking-tight mb-2">{mod.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{mod.description}</p>
                 <div className="flex items-center gap-2 mt-5 text-gray-500 group-hover:text-blue-400 transition-colors">
                   <span className="text-[11px] font-black uppercase tracking-widest">Abrir módulo</span>

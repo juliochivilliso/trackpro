@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { MOCK_VEHICLES } from '../../../../lib/api-client';
+import { API_BASE, MOCK_VEHICLES } from '../../../../lib/api-client';
 import { Car, Search, Edit2, Power, Cpu, AlertCircle, Link2, Link2Off, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface Vehicle {
@@ -38,7 +38,7 @@ export default function VehiculosPage() {
 
   const loadVehicles = async () => {
     try {
-      const res = await fetch('http://localhost:4000/vehicles');
+      const res = await fetch(`${API_BASE}/vehicles`);
       if (res.ok) { setVehicles(await res.json()); setApiLive(true); }
       else throw new Error();
     } catch {
@@ -51,7 +51,7 @@ export default function VehiculosPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const url = editingVehicle ? `http://localhost:4000/vehicles/${editingVehicle.id}` : 'http://localhost:4000/vehicles';
+      const url = editingVehicle ? `${API_BASE}/vehicles/${editingVehicle.id}` : `${API_BASE}/vehicles`;
       const res = await fetch(url, {
         method: editingVehicle ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,13 +71,13 @@ export default function VehiculosPage() {
 
   const handleDeactivate = async (v: Vehicle) => {
     if (!confirm(`¿Desactivar el vehículo ${v.plate}?`)) return;
-    const res = await fetch(`http://localhost:4000/vehicles/${v.id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/vehicles/${v.id}`, { method: 'DELETE' });
     if (res.ok) await loadVehicles();
   };
 
   const openLinkModal = async (vehicle: Vehicle) => {
     try {
-      const res = await fetch('http://localhost:4000/equipment');
+      const res = await fetch(`${API_BASE}/equipment`);
       let equip = [];
       if (res.ok) {
         equip = await res.json();
@@ -93,7 +93,7 @@ export default function VehiculosPage() {
 
   const handleLink = async (vehicleId: number, equipmentId: number) => {
     try {
-      const res = await fetch('http://localhost:4000/assignments', {
+      const res = await fetch(`${API_BASE}/assignments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vehicleId, equipmentId })
@@ -111,7 +111,7 @@ export default function VehiculosPage() {
   const handleUnlink = async (assignmentId: number) => {
     if (!confirm('¿Desvincular equipo?')) return;
     try {
-      const res = await fetch(`http://localhost:4000/assignments/${assignmentId}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/assignments/${assignmentId}`, { method: 'DELETE' });
       if (res.ok) await loadVehicles();
       else alert('Error al desvincular. Verifica que la API esté activa.');
     } catch {
@@ -153,7 +153,7 @@ export default function VehiculosPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
             <Car className="w-6 h-6 text-blue-400" />
             Gestión de Vehículos
           </h1>
@@ -173,7 +173,7 @@ export default function VehiculosPage() {
             placeholder="Buscar placa, marca, modelo..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-surface-hover)] border border-[var(--color-border-glass)] rounded-xl text-sm text-white placeholder-gray-500 focus:border-blue-500/50 outline-none transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-surface-hover)] border border-[var(--color-border-glass)] rounded-xl text-sm text-[var(--color-text-primary)] placeholder-gray-500 focus:border-blue-500/50 outline-none transition-colors"
           />
         </div>
         <div className="flex items-center gap-1 p-1 glass-panel rounded-xl">
@@ -182,7 +182,7 @@ export default function VehiculosPage() {
               key={f}
               onClick={() => setStatusFilter(f)}
               className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                statusFilter === f ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'
+                statusFilter === f ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-[var(--color-text-primary)]'
               }`}
             >
               {f === 'all' ? 'Todos' : f === 'active' ? 'Activos' : 'Inactivos'}
@@ -228,11 +228,11 @@ export default function VehiculosPage() {
                 return (
                   <tr key={v.id} className="hover:bg-[var(--color-surface-hover)]/30 transition-colors group">
                     <td className="px-6 py-4">
-                      <span className="font-mono font-bold text-white text-sm">{v.plate}</span>
+                      <span className="font-mono font-bold text-[var(--color-text-primary)] text-sm">{v.plate}</span>
                       {v.vin && <p className="text-[10px] text-gray-500 font-mono mt-0.5">{v.vin}</p>}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-white">{v.make} {v.model}</span>
+                      <span className="font-semibold text-[var(--color-text-primary)]">{v.make} {v.model}</span>
                     </td>
                     <td className="px-6 py-4 font-mono text-sm text-gray-400">{v.year ?? '—'}</td>
                     <td className="px-6 py-4">
@@ -240,7 +240,7 @@ export default function VehiculosPage() {
                         <div className="flex items-center gap-2">
                           <Cpu className="w-3.5 h-3.5 text-cyan-400" />
                           <div>
-                            <p className="text-xs font-bold text-white">{gps.name}</p>
+                            <p className="text-xs font-bold text-[var(--color-text-primary)]">{gps.name}</p>
                             <p className="text-[10px] font-mono text-gray-500">{gps.code}</p>
                           </div>
                         </div>
@@ -332,7 +332,7 @@ export default function VehiculosPage() {
                     onClick={() => handleLink(linkingVehicle.id, eq.id)}
                     className="w-full text-left p-3 rounded-xl border border-[var(--color-border-glass)] hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors group"
                   >
-                    <p className="text-sm font-semibold text-white group-hover:text-blue-400">{eq.name}</p>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-blue-400">{eq.name}</p>
                     <p className="text-[10px] font-mono text-gray-400">{eq.code}</p>
                   </button>
                 ))

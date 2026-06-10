@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { MOCK_EQUIPMENT } from '../../../../lib/api-client';
+import { API_BASE, MOCK_EQUIPMENT } from '../../../../lib/api-client';
 
 interface Equipment {
   id: number;
@@ -41,7 +41,7 @@ export default function EquiposPage() {
 
   const loadEquipment = async () => {
     try {
-      const res = await fetch('http://localhost:4000/equipment');
+      const res = await fetch(`${API_BASE}/equipment`);
       if (res.ok) setEquipment(await res.json());
       else throw new Error();
     } catch {
@@ -51,7 +51,7 @@ export default function EquiposPage() {
 
   const loadVehicles = async () => {
     try {
-      const res = await fetch('http://localhost:4000/vehicles');
+      const res = await fetch(`${API_BASE}/vehicles`);
       let vehs = [];
       if (res.ok) vehs = await res.json();
       else throw new Error();
@@ -66,7 +66,7 @@ export default function EquiposPage() {
 
   const handleAssign = async (equipment: Equipment, vehicleId: number) => {
     try {
-      const res = await fetch('http://localhost:4000/assignments', {
+      const res = await fetch(`${API_BASE}/assignments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vehicleId, equipmentId: equipment.id })
@@ -85,7 +85,7 @@ export default function EquiposPage() {
   const handleUnassign = async (equipment: Equipment) => {
     if (!confirm(`¿Desasignar el equipo ${equipment.code}?`)) return;
     try {
-      const resAssignments = await fetch('http://localhost:4000/assignments');
+      const resAssignments = await fetch(`${API_BASE}/assignments`);
       let assignments = [];
       if (resAssignments.ok) assignments = await resAssignments.json();
       else {
@@ -94,7 +94,7 @@ export default function EquiposPage() {
       }
       const assignment = assignments.find((a: any) => a.equipmentId === equipment.id);
       if (assignment) {
-        const resDel = await fetch(`http://localhost:4000/assignments/${assignment.id}`, { method: 'DELETE' });
+        const resDel = await fetch(`${API_BASE}/assignments/${assignment.id}`, { method: 'DELETE' });
         if (resDel.ok) { await loadEquipment(); await loadVehicles(); }
         else alert('Error al desasignar equipo');
       } else {
@@ -108,7 +108,7 @@ export default function EquiposPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const url = editingEquipment ? `http://localhost:4000/equipment/${editingEquipment.id}` : 'http://localhost:4000/equipment';
+      const url = editingEquipment ? `${API_BASE}/equipment/${editingEquipment.id}` : `${API_BASE}/equipment`;
       const res = await fetch(url, {
         method: editingEquipment ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -121,7 +121,7 @@ export default function EquiposPage() {
 
   const handleDelete = async (eq: Equipment) => {
     if (!confirm(`¿Eliminar el equipo ${eq.code}?`)) return;
-    const res = await fetch(`http://localhost:4000/equipment/${eq.id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/equipment/${eq.id}`, { method: 'DELETE' });
     if (res.ok) await loadEquipment();
   };
 
@@ -144,7 +144,7 @@ export default function EquiposPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
             <Cpu className="w-6 h-6 text-cyan-400" />
             Inventario de Equipos GPS
           </h1>
@@ -158,7 +158,7 @@ export default function EquiposPage() {
       {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total', value: counts.total, color: 'text-white' },
+          { label: 'Total', value: counts.total, color: 'text-[var(--color-text-primary)]' },
           { label: 'Disponibles', value: counts.available, color: 'text-emerald-400' },
           { label: 'Instalados', value: counts.assigned, color: 'text-blue-400' },
           { label: 'Mantenimiento', value: counts.maintenance, color: 'text-amber-400' },
@@ -179,7 +179,7 @@ export default function EquiposPage() {
             placeholder="Buscar código, nombre, IMEI..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-surface-hover)] border border-[var(--color-border-glass)] rounded-xl text-sm text-white placeholder-gray-500 focus:border-blue-500/50 outline-none transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-surface-hover)] border border-[var(--color-border-glass)] rounded-xl text-sm text-[var(--color-text-primary)] placeholder-gray-500 focus:border-blue-500/50 outline-none transition-colors"
           />
         </div>
         <div className="flex items-center gap-1 p-1 glass-panel rounded-xl">
@@ -188,7 +188,7 @@ export default function EquiposPage() {
               key={f}
               onClick={() => setStatusFilter(f)}
               className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                statusFilter === f ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'
+                statusFilter === f ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-[var(--color-text-primary)]'
               }`}
             >
               {f === 'all' ? 'Todos' : STATUS_LABELS[f as Equipment['status']]}
@@ -217,7 +217,7 @@ export default function EquiposPage() {
               {filtered.map(e => (
                 <tr key={e.id} className="hover:bg-[var(--color-surface-hover)]/30 transition-colors group">
                   <td className="px-6 py-4 font-mono font-bold text-cyan-400 text-sm">{e.code}</td>
-                  <td className="px-6 py-4 font-semibold text-white">{e.name}</td>
+                  <td className="px-6 py-4 font-semibold text-[var(--color-text-primary)]">{e.name}</td>
                   <td className="px-6 py-4 font-mono text-xs text-gray-400">{e.imei ?? '—'}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${STATUS_STYLES[e.status]}`}>
@@ -293,7 +293,7 @@ export default function EquiposPage() {
                     onClick={() => handleAssign(assigningEquipment, v.id)}
                     className="w-full text-left p-3 rounded-xl border border-[var(--color-border-glass)] hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors group"
                   >
-                    <p className="text-sm font-semibold text-white group-hover:text-blue-400">{v.plate}</p>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-blue-400">{v.plate}</p>
                   </button>
                 ))
               )}

@@ -25,3 +25,9 @@ gps_smart_flutter/.dart_tool/
 *.pem
 Credenciales_Servidor_GPS.txt
 .claude/
+
+# Scripts de generación
+trackpro-web/scripts/
+
+# Documentos PDF
+*.pdf

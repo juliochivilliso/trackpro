@@ -45,7 +45,7 @@ export default function ReportesPage() {
               className={`px-4 py-1.5 text-sm rounded-lg transition-colors ${
                 period === p 
                   ? "bg-blue-500/20 text-blue-400 font-medium" 
-                  : "text-[var(--color-text-secondary)] hover:text-white"
+                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
               }`}
             >
               {p === "today" ? "Hoy" : p === "week" ? "Esta semana" : "Este mes"}
@@ -93,7 +93,7 @@ function TabButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
       className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
         isActive 
           ? "border-blue-400 text-blue-400" 
-          : "border-transparent text-[var(--color-text-secondary)] hover:text-white"
+          : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
       }`}
     >
       {React.cloneElement(icon as React.ReactElement<any>, { className: "w-4 h-4" })}
@@ -137,7 +137,7 @@ function ResumenTab({ data }: { data: ReportData }) {
         {data.kpiCards.map((kpi, idx) => (
           <div key={idx} className="bg-[var(--color-surface-glass)] border border-[var(--color-border-glass)] rounded-2xl p-5 hover:bg-white/5 transition-colors">
             <h3 className="text-sm text-[var(--color-text-secondary)] font-medium mb-1">{kpi.label}</h3>
-            <p className="text-2xl font-semibold font-mono text-white mb-2">{kpi.value}</p>
+            <p className="text-2xl font-semibold font-mono text-[var(--color-text-primary)] mb-2">{kpi.value}</p>
             <p className="text-xs text-green-400">{kpi.delta}</p>
           </div>
         ))}
@@ -179,11 +179,11 @@ function ResumenTab({ data }: { data: ReportData }) {
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate text-white">{v.name}</p>
+                  <p className="text-sm font-medium truncate text-[var(--color-text-primary)]">{v.name}</p>
                   <p className="text-xs text-[var(--color-text-secondary)] font-mono">{v.id}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-mono text-white">{v.km} km</p>
+                  <p className="text-sm font-mono text-[var(--color-text-primary)]">{v.km} km</p>
                   <p className="text-xs text-[var(--color-text-secondary)]">{v.trips} viajes</p>
                 </div>
               </div>
@@ -232,7 +232,7 @@ function ConductoresTab({ data }: { data: ReportData }) {
                 const cols = ["name", "trips", "km", "avgSpeed", "fuelEff", "score"];
                 const colKey = cols[i];
                 return (
-                  <th key={hd} className="px-6 py-4 font-medium cursor-pointer hover:text-white transition-colors" onClick={() => handleSort(colKey)}>
+                  <th key={hd} className="px-6 py-4 font-medium cursor-pointer hover:text-[var(--color-text-primary)] transition-colors" onClick={() => handleSort(colKey)}>
                     <div className="flex items-center gap-1">
                       {hd}
                       {sortCol === colKey && (
@@ -248,7 +248,7 @@ function ConductoresTab({ data }: { data: ReportData }) {
             {sortedData.map((d, idx) => (
               <tr key={idx} className="hover:bg-white/5 transition-colors">
                 <td className="px-6 py-4">
-                  <p className="font-medium text-white">{d.name}</p>
+                  <p className="font-medium text-[var(--color-text-primary)]">{d.name}</p>
                   <p className="text-xs text-[var(--color-text-secondary)] font-mono">{d.driverId}</p>
                 </td>
                 <td className="px-6 py-4 font-mono text-[var(--color-text-secondary)]">{d.trips}</td>
@@ -315,7 +315,7 @@ function AlertasTab({ data }: { data: ReportData }) {
                {data.alertsBySeverity.critical}
              </div>
              <div>
-               <p className="text-sm font-medium text-white">Críticas</p>
+               <p className="text-sm font-medium text-[var(--color-text-primary)]">Críticas</p>
                <p className="text-xs text-[var(--color-text-secondary)]">Atención inmediata</p>
              </div>
           </div>
@@ -324,7 +324,7 @@ function AlertasTab({ data }: { data: ReportData }) {
                {data.alertsBySeverity.warning}
              </div>
              <div>
-               <p className="text-sm font-medium text-white">Advertencia</p>
+               <p className="text-sm font-medium text-[var(--color-text-primary)]">Advertencia</p>
                <p className="text-xs text-[var(--color-text-secondary)]">Monitoreo</p>
              </div>
           </div>
@@ -333,7 +333,7 @@ function AlertasTab({ data }: { data: ReportData }) {
                {data.alertsBySeverity.info}
              </div>
              <div>
-               <p className="text-sm font-medium text-white">Info</p>
+               <p className="text-sm font-medium text-[var(--color-text-primary)]">Info</p>
                <p className="text-xs text-[var(--color-text-secondary)]">Notificaciones</p>
              </div>
           </div>
@@ -371,7 +371,7 @@ function AlertasTab({ data }: { data: ReportData }) {
                   <span className="font-mono text-red-400 font-bold bg-red-400/10 px-2 py-0.5 rounded border border-red-400/20">{dtc.code}</span>
                   <span className="text-xs font-mono text-[var(--color-text-secondary)]">{dtc.count} veces</span>
                </div>
-               <p className="text-sm font-medium text-white">{dtc.desc}</p>
+               <p className="text-sm font-medium text-[var(--color-text-primary)]">{dtc.desc}</p>
                <p className="text-xs text-[var(--color-text-secondary)] truncate">Vehículo: {dtc.vehicle}</p>
             </div>
           ))}
@@ -400,12 +400,12 @@ function MantenimientoTab({ data }: { data: ReportData }) {
        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[var(--color-surface-glass)] border border-[var(--color-border-glass)] rounded-2xl p-6 flex flex-col justify-center items-center text-center">
              <Wrench className="w-8 h-8 text-blue-400 mb-2" />
-             <p className="text-3xl font-mono font-bold text-white mb-1">{data.maintenanceSummary.alDia}</p>
+             <p className="text-3xl font-mono font-bold text-[var(--color-text-primary)] mb-1">{data.maintenanceSummary.alDia}</p>
              <p className="text-sm text-[var(--color-text-secondary)]">Vehículos al Día</p>
           </div>
           <div className="bg-[var(--color-surface-glass)] border border-[var(--color-border-glass)] rounded-2xl p-6 flex flex-col justify-center items-center text-center">
              <CalendarDays className="w-8 h-8 text-yellow-400 mb-2" />
-             <p className="text-3xl font-mono font-bold text-white mb-1">{data.maintenanceSummary.proximos}</p>
+             <p className="text-3xl font-mono font-bold text-[var(--color-text-primary)] mb-1">{data.maintenanceSummary.proximos}</p>
              <p className="text-sm text-[var(--color-text-secondary)]">Mantenimiento Próximo</p>
           </div>
           <div className="bg-[var(--color-surface-glass)] border border-[var(--color-border-glass)] rounded-2xl p-6 flex flex-col justify-center items-center text-center ring-1 ring-red-500/30">
@@ -423,7 +423,7 @@ function MantenimientoTab({ data }: { data: ReportData }) {
                {data.vehicleMaintenanceStatus.map((v, i) => (
                  <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5 gap-3">
                    <div>
-                     <p className="font-medium text-white text-sm">{v.name}</p>
+                     <p className="font-medium text-[var(--color-text-primary)] text-sm">{v.name}</p>
                      <p className="text-xs text-[var(--color-text-secondary)] font-mono">{v.id} • Odómetro: {v.odometer}</p>
                    </div>
                    <div className="flex items-center gap-3">
@@ -449,7 +449,7 @@ function MantenimientoTab({ data }: { data: ReportData }) {
                    <div className="flex items-center gap-3">
                      <div className={`w-2 h-2 rounded-full ${srv.urgency === 'critical' ? 'bg-red-500' : srv.urgency === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'}`}></div>
                      <div>
-                       <p className="font-medium text-white flex items-center gap-2">
+                       <p className="font-medium text-[var(--color-text-primary)] flex items-center gap-2">
                          {srv.service}
                          {srv.dueInKm === 0 && <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase border border-red-500/30">Vencido</span>}
                        </p>

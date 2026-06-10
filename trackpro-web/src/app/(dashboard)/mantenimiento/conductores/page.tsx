@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { MOCK_DRIVERS } from '../../../../lib/api-client';
+import { API_BASE, MOCK_DRIVERS } from '../../../../lib/api-client';
 
 interface Driver {
   id: number;
@@ -55,7 +55,7 @@ export default function ConductoresPage() {
 
   const loadDrivers = async () => {
     try {
-      const res = await fetch('http://localhost:4000/drivers');
+      const res = await fetch(`${API_BASE}/drivers`);
       if (res.ok) {
         const data = await res.json();
         setDrivers(data);
@@ -75,8 +75,8 @@ export default function ConductoresPage() {
     setSaving(true);
     try {
       const url = editingDriver
-        ? `http://localhost:4000/drivers/${editingDriver.id}`
-        : 'http://localhost:4000/drivers';
+        ? `${API_BASE}/drivers/${editingDriver.id}`
+        : `${API_BASE}/drivers`;
       const method = editingDriver ? 'PATCH' : 'POST';
       const res = await fetch(url, {
         method,
@@ -102,7 +102,7 @@ export default function ConductoresPage() {
 
   const handleDeactivate = async (driver: Driver) => {
     if (!confirm(`¿Desactivar al conductor ${driver.firstName} ${driver.lastName}?`)) return;
-    const res = await fetch(`http://localhost:4000/drivers/${driver.id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/drivers/${driver.id}`, { method: 'DELETE' });
     if (res.ok) await loadDrivers();
   };
 
@@ -125,7 +125,7 @@ export default function ConductoresPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
             <Users className="w-6 h-6 text-purple-400" />
             Gestión de Conductores
           </h1>
@@ -168,7 +168,7 @@ export default function ConductoresPage() {
             </button>
           )}
           {alertFilter !== 'all' && (
-            <button onClick={() => setAlertFilter('all')} className="px-4 py-2 rounded-xl border border-gray-700 text-xs font-bold text-gray-400 hover:text-white transition-colors">
+            <button onClick={() => setAlertFilter('all')} className="px-4 py-2 rounded-xl border border-gray-700 text-xs font-bold text-gray-400 hover:text-[var(--color-text-primary)] transition-colors">
               Ver todos
             </button>
           )}
@@ -183,7 +183,7 @@ export default function ConductoresPage() {
           placeholder="Buscar por nombre o licencia..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-surface-hover)] border border-[var(--color-border-glass)] rounded-xl text-sm text-white placeholder-gray-500 focus:border-blue-500/50 outline-none transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-surface-hover)] border border-[var(--color-border-glass)] rounded-xl text-sm text-[var(--color-text-primary)] placeholder-gray-500 focus:border-blue-500/50 outline-none transition-colors"
         />
       </div>
 
@@ -211,7 +211,7 @@ export default function ConductoresPage() {
                       <div className="w-8 h-8 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[10px] font-bold text-purple-400">
                         {d.firstName[0]}{d.lastName[0]}
                       </div>
-                      <span className="font-semibold text-white">{d.firstName} {d.lastName}</span>
+                      <span className="font-semibold text-[var(--color-text-primary)]">{d.firstName} {d.lastName}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 font-mono text-sm text-gray-400">{d.licenseNumber}</td>

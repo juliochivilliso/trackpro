@@ -125,7 +125,7 @@ export default function AjustesPage() {
               <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Perfil del Usuario</h2>
             </div>
             {!profileEdit && (
-              <button onClick={() => { setProfileFormData(profile); setProfileEdit(true); }} className="text-[var(--color-text-secondary)] hover:text-white transition-colors">
+              <button onClick={() => { setProfileFormData(profile); setProfileEdit(true); }} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">
                 <Pencil className="w-4 h-4" />
               </button>
             )}
@@ -153,7 +153,7 @@ export default function AjustesPage() {
                     <button onClick={saveProfile} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all">
                       Guardar
                     </button>
-                    <button onClick={() => setProfileEdit(false)} className="px-5 py-2.5 text-[var(--color-text-secondary)] hover:text-white text-sm transition-all">
+                    <button onClick={() => setProfileEdit(false)} className="px-5 py-2.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-sm transition-all">
                       Cancelar
                     </button>
                   </div>
@@ -195,7 +195,7 @@ export default function AjustesPage() {
               <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Organización</h2>
             </div>
             {!orgEdit && (
-              <button onClick={() => { setOrgFormData(org); setOrgEdit(true); }} className="text-[var(--color-text-secondary)] hover:text-white transition-colors">
+              <button onClick={() => { setOrgFormData(org); setOrgEdit(true); }} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">
                 <Pencil className="w-4 h-4" />
               </button>
             )}
@@ -219,7 +219,7 @@ export default function AjustesPage() {
                   <button onClick={saveOrg} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all">
                     Guardar
                   </button>
-                  <button onClick={() => setOrgEdit(false)} className="px-5 py-2.5 text-[var(--color-text-secondary)] hover:text-white text-sm transition-all">
+                  <button onClick={() => setOrgEdit(false)} className="px-5 py-2.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-sm transition-all">
                     Cancelar
                   </button>
                 </div>
