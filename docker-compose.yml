@@ -3,7 +3,7 @@ services:
     build:
       context: .
       args:
-        NEXT_PUBLIC_API_URL: http://2.24.83.115:4000
+        NEXT_PUBLIC_API_URL: http://51.161.107.103:4000
         NEXT_PUBLIC_MAPBOX_TOKEN: ${NEXT_PUBLIC_MAPBOX_TOKEN}
     container_name: trackpro
     restart: unless-stopped
